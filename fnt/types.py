@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import NewType, Any, Self
+from typing import Any, Self
 import dataclasses
 import struct
 
@@ -64,6 +64,7 @@ __all__ = (
     "Table",
 )
 
+
 # -- Struct Aliases --
 uint8_s = "c"  # Unsigned 8-bit int
 int8_s = "c"  # Signed 8-bit int
@@ -84,6 +85,7 @@ Offset16_s = "2c"  # 16-bit offset in table, NULL = 0b0000
 Offset24_s = "3c"  # 24-bit offset in table, NULL = 0b000000
 Offset32_s = "4c"  # 32-bit offset in table, NULL = 0b00000000
 Version16Dot16_s = "4c"  # 2 16-bit bytes (2nd is little endian)
+
 
 type uint8_t = int
 type int8_t = int
@@ -157,7 +159,9 @@ def UFWORD(b: bytes) -> UFWORD_t:
 
 
 def F2DOT14(b: bytes) -> F2DOT14_t:
-    # Based on definition in https://learn.microsoft.com/en-us/typography/opentype/spec/otff#table-version-numbers
+    # The F2DOT14 format consists of a signed, 2’s complement integer
+    # and an unsigned fraction. To compute the actual value,
+    # take the integer and add the fraction.
     integer_bits = 0xC0 & b[0]
     match integer_bits:
         case 0x00:
