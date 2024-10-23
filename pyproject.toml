@@ -1,0 +1,89 @@
+[project]
+name = "pyfont"
+version = "0.0.1"
+description = ""
+readme = "README.md"
+authors = [
+    { name = "DragonMoffon" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+    # "License :: OSI Approved :: MIT License"
+]
+requires-python = ">= 3.13"
+dependencies = [
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==7.2.1",
+    "flake8==6.0.0",
+    "autopep8==2.0.1",
+    "ruff",
+    "black"
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["charm"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff.lint]
+select = [
+    "F",        # Pyflakes
+    "E", "W",   # pycodestyle
+    "C90",      # mccabe
+    "N",        # pep8-naming
+    "UP",       # pyupgrade
+    "ANN",      # flake8-annotations
+    "ASYNC",    # flake8-async
+    "BLE",      # flake8-blind-except
+    "FBT",      # flake8-boolean-trap
+    "B",        # flake8-bugbear
+    "A",        # flake8-builtins
+    "COM",      # flake8-commas
+    "C4",       # flake8-comprehensions
+    "DTZ",      # flake8-datetimez
+    "ICN",      # flake8-import-conventions
+    "LOG",      # flake8-logging
+    "PIE",      # flake8-pie
+    "T20",      # flake8-print
+    "PYI",      # flake8-pyi
+    "PT",       # flake8-pytest-style
+    "RSE",      # flake8-raise
+    "RET",      # flake8-return
+    "SLF",      # flake8-self
+    "PTH",      # flake8-use-pathlib
+    "FIX",      # flake8-fixme
+    "PGH",      # pygrep-hooks
+    "RUF",      # Ruff-specific rules
+
+]
+ignore = [
+    "ANN101",
+    "ANN102",
+    "ANN204",
+    "B019",
+    "C901",
+    "COM812",
+    "E501",
+    "E741",
+    "FBT003",
+    "N817",
+    "PIE790",
+    "RET504",
+    "RET505",
+    "RET507",
+    "RUF001",
+    "RUF013",
+    "PTH123",
+    "C401",
+    "N841"
+]
+
