@@ -1,7 +1,6 @@
 from __future__ import annotations
-from typing import Any, Self, Protocol
+from typing import Self, Protocol
 from types import new_class
-from collections.abc import Callable
 import dataclasses
 import struct
 
@@ -35,6 +34,12 @@ class _ttf_type:
 
     @classmethod
     def read(cls: Self, buffer: bytes, offset: int = 0) -> Self:
+        """
+        Return the TTF type extracted from the bytes at the offset in the buffer.
+        By default this is bounded by the type's size, but the Table and Array
+        TTF type don't follow this convention and aren't bounded from above.
+        This means that they won't immediatly throw a ValueError.
+        """
         if cls.sz is None:
             raise TypeError(f"{cls} is not a fully formed ttf type")
 
@@ -246,28 +251,33 @@ class Version16Dot16(tuple[int, int], _ttf_type):
         return tuple.__new__(cls, (b[0] << 8 + b[1], (b[2] & 0xF0) >> 4))
 
 
-# An array of fixed type and length. Supports
+# An array of fixed type and length. Supports being an Array of SubTables (even with their own dynamic arrays)
 class Array(tuple, _ttf_type):
+    # Array type, the array is ill-formed if this isn't set and creation.
+    # If the base Array ever gets a __typ__ value all of hell will break loose (maybe).
     __typ__: type[_ttf_type] = None
-    __ln__: int = 0
+    __ln__: int = 0  # Array length (not byte size) 0 is a valid amount
 
     def __new__(cls, b: bytes = b""):
         if cls.__typ__ is None:
             raise TypeError(f"{cls} is not a fully formed Array")
 
-        offset = 0
+        # Because the Array's TTF type might be dynamic is size
+        # all we can do is iterate over them. This could be shortened to an actual
+        # struct read for static arrays.
+        sz = 0
         items = [None] * cls.__ln__
         for idx in range(cls.__ln__):
-            items[idx] = item = cls.__typ__.read(b, offset)
+            items[idx] = item = cls.__typ__.read(b, sz)
             if item.sz is None or item.fmt is None:
                 raise ValueError(
-                    f"failed to create a fully formed ttf item of type {cls.__typ__} in {cls} from buffer {b} at offset {offset}"
+                    f"failed to create a fully formed ttf item of type {cls.__typ__} in {cls} from buffer {b} at offset {sz}"
                 )
-            offset += item.sz
+            sz += item.sz
 
         array = tuple.__new__(cls, items)
         array.fmt = "".join(item.fmt for item in array)
-        array.sz = struct.calcsize(array.fmt)
+        array.sz = sz
 
         return array
 
@@ -289,6 +299,14 @@ class Array(tuple, _ttf_type):
     def __class_getitem__(
         cls: Self, inp: type[_ttf_type] | int | tuple[_ttf_type, int]
     ):
+        """
+        To follow the convention set by the other TTF types and to reduce the
+        teeny tiny boiler-plate Array delves into types metamagic to store
+        the array type and size for later. This only works because
+        dataclasses.Field stores the actual type. If another implimentation
+        doesn't follow suit this code will not work. Also type-checker's hate this
+        a lot.
+        """
         if isinstance(inp, tuple):
             if len(inp) != 2:
                 raise TypeError("{cls} only accepts up to two type arguments")
@@ -335,7 +353,9 @@ class Array(tuple, _ttf_type):
 
 
 class DynamicFunction(Protocol):
-    def __call__(self, *srcs, typ: type[_ttf_type], buffer: bytes, offset: int = 0): ...
+    def __call__(
+        self, *srcs, typ: type[_ttf_type], buffer: bytes, offset: int = 0
+    ) -> _ttf_type: ...
 
 
 # staticEntry - Found in the table as is (default)
