@@ -1,8 +1,6 @@
 from __future__ import annotations
 from typing import Self, Protocol
-from types import new_class
 import dataclasses
-import struct
 
 __all__ = (
     "uint8",
@@ -24,7 +22,9 @@ __all__ = (
     "Offset24",
     "Offset32",
     "Version16Dot16",
-    "Table",
+    "static",
+    "dynamic",
+    "definition",
 )
 
 
@@ -319,12 +319,12 @@ class Array(tuple, _ttf_type):
             if not isinstance(typ, type):
                 raise TypeError("{cls} only accepts types for the first argument")
 
-            newcls = new_class("Array", (cls,))
+            newcls = type(cls.__name__, cls.__bases__, dict(**cls.__dict__))
             newcls.__typ__ = typ
             newcls.__ln__ = ln
             return newcls
         elif isinstance(inp, type):
-            newcls = new_class("Array", (cls,))
+            newcls = type(cls.__name__, cls.__bases__, dict(**cls.__dict__))
             newcls.__typ__ = inp
             return newcls
         elif cls.__typ__ is None:
@@ -453,7 +453,20 @@ class Table(_ttf_type):
         return wrap
 
 
-def definition(cls: type[Table]) -> type[Table]:
+def definition(cls: type) -> type[Table]:
+    # A decorator used to define a new table.
+    # Ensures that cls is a Table subclass, but
+    # also allows for it to be subclassed directly.
+    if not issubclass(cls, Table):
+        # Clone the cls type, but makes Table as a parent class
+        bases = cls.__bases__
+        if bases == (object,):
+            bases = ()
+        cls = type(cls.__name__, bases + (Table,), dict(**cls.__dict__))
+    elif cls.__versions__ is not None:
+        raise ValueError(
+            f"A table of type {cls} has already been defined use `{cls}.version(<x>)` instead"
+        )
     cls = dataclasses.dataclass(cls)
     cls.__versions__ = {}
     return cls
