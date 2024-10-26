@@ -3,6 +3,7 @@ from typing import Self, Protocol
 import dataclasses
 
 __all__ = (
+    "TTFType",
     "uint8",
     "int8",
     "uint16",
@@ -22,13 +23,16 @@ __all__ = (
     "Offset24",
     "Offset32",
     "Version16Dot16",
+    "Array",
     "static",
     "dynamic",
+    "array",
     "definition",
+    "Table",
 )
 
 
-class _ttf_type:
+class TTFType:
     fmt: str = None  # Byte format for struct pack/unpack
     sz: int = None  # Byte size equal to struct.calcsize(cls)
 
@@ -51,8 +55,20 @@ class _ttf_type:
 
         return cls(b)
 
+    @classmethod
+    def byte(cls: Self, val, signed: bool = False) -> Self:
+        # byte is NOT a safe method of getting TTFType's but neccisary for
+        # simple lambda functions.
+        if cls.sz is None:
+            raise ValueError("Cannot byte {cls} as it is not fully formed")
+        return cls(val.to_bytes(length=cls.sz, signed=signed))
 
-class uint8(int, _ttf_type):
+
+class TTFEnum:
+    pass
+
+
+class uint8(int, TTFType):
     fmt: str = "c"
     sz: int = 1
 
@@ -60,7 +76,7 @@ class uint8(int, _ttf_type):
         return int.__new__(cls, b[0])
 
 
-class int8(int, _ttf_type):
+class int8(int, TTFType):
     fmt: str = "c"
     sz: int = 1
 
@@ -69,7 +85,7 @@ class int8(int, _ttf_type):
         return int.__new__(cls, b[0] - ((b[0] & 0x80) << 1))
 
 
-class uint16(int, _ttf_type):
+class uint16(int, TTFType):
     fmt: str = "2c"
     sz: int = 2
 
@@ -77,7 +93,7 @@ class uint16(int, _ttf_type):
         return int.__new__(cls, (b[0] << 8) + b[1])
 
 
-class int16(int, _ttf_type):
+class int16(int, TTFType):
     fmt: str = "2c"
     sz: int = 2
 
@@ -86,7 +102,7 @@ class int16(int, _ttf_type):
         return int.__new__(cls, (b[0] << 8) + b[1] - ((b[0] & 0x80) << 9))
 
 
-class uint24(int, _ttf_type):
+class uint24(int, TTFType):
     fmt: str = "3c"
     sz: int = 3
 
@@ -94,7 +110,7 @@ class uint24(int, _ttf_type):
         return int.__new__(cls, (b[0] << 16) + (b[1] << 8) + b[2])
 
 
-class int24(int, _ttf_type):
+class int24(int, TTFType):
     fmt: str = "3c"
     sz: int = 3
 
@@ -103,7 +119,7 @@ class int24(int, _ttf_type):
         return int.__new__(cls, uint24(b) - ((b[0] & 0x80) << 17))
 
 
-class uint32(int, _ttf_type):
+class uint32(int, TTFType):
     fmt: str = "4c"
     sz: int = 4
 
@@ -111,7 +127,7 @@ class uint32(int, _ttf_type):
         return int.__new__(cls, (b[0] << 24) + (b[1] << 16) + (b[2] << 8) + b[3])
 
 
-class int32(int, _ttf_type):
+class int32(int, TTFType):
     fmt: str = "4c"
     sz: int = 4
 
@@ -124,7 +140,7 @@ class int32(int, _ttf_type):
 
 
 # Signed 32-bit float with 16.16 fixed split
-class fixed(float, _ttf_type):
+class fixed(float, TTFType):
     fmt: str = "4c"
     sz: int = 4
 
@@ -135,7 +151,7 @@ class fixed(float, _ttf_type):
 
 
 # Alias to int16 for font design units
-class FWORD(int, _ttf_type):
+class FWORD(int, TTFType):
     fmt: str = "2c"
     sz: int = 2
 
@@ -144,7 +160,7 @@ class FWORD(int, _ttf_type):
 
 
 # Alias to uint16 for font design units
-class UFWORD(int, _ttf_type):
+class UFWORD(int, TTFType):
     fmt: str = "2c"
     sz: int = 2
 
@@ -153,7 +169,7 @@ class UFWORD(int, _ttf_type):
 
 
 # 16-bit signed fixed float with 2.14 bit split
-class F2DOT14(float, _ttf_type):
+class F2DOT14(float, TTFType):
     fmt: str = "2c"
     sz: int = 2
 
@@ -176,7 +192,7 @@ class F2DOT14(float, _ttf_type):
 
 
 # 64-bit signed int for seconds since 12:00 midnight jan 1 1904
-class LONGDATETIME(int, _ttf_type):
+class LONGDATETIME(int, TTFType):
     fmt: str = "8c"
     sz: int = 8
 
@@ -194,7 +210,7 @@ class LONGDATETIME(int, _ttf_type):
 
 
 # Tag of 4 8-bit uints (ASCII char) for identification
-class Tag(tuple[int, int, int, int], _ttf_type):
+class Tag(tuple[int, int, int, int], TTFType):
     fmt: str = "4c"
     sz: int = 4
 
@@ -203,7 +219,7 @@ class Tag(tuple[int, int, int, int], _ttf_type):
 
 
 # 8-bit offset in table, NULL = 0x00
-class Offset8(int, _ttf_type):
+class Offset8(int, TTFType):
     fmt: str = "c"
     sz: int = 1
 
@@ -212,7 +228,7 @@ class Offset8(int, _ttf_type):
 
 
 # 16-bit offset in table, NULL = 0x0000
-class Offset16(int, _ttf_type):
+class Offset16(int, TTFType):
     fmt: str = "2c"
     sz: int = 2
 
@@ -221,7 +237,7 @@ class Offset16(int, _ttf_type):
 
 
 # 24-bit offset in table, NULL = 0x000000
-class Offset24(int, _ttf_type):
+class Offset24(int, TTFType):
     fmt: str = "3c"
     sz: int = 3
 
@@ -230,7 +246,7 @@ class Offset24(int, _ttf_type):
 
 
 # 32-bit offset in table, NULL = 0x00000000
-class Offset32(int, _ttf_type):
+class Offset32(int, TTFType):
     fmt: str = "4c"
     sz: int = 4
 
@@ -239,7 +255,7 @@ class Offset32(int, _ttf_type):
 
 
 # 2 16-bit uints (2nd uses only first 4 bits)
-class Version16Dot16(tuple[int, int], _ttf_type):
+class Version16Dot16(tuple[int, int], TTFType):
     fmt: str = "4c"
     sz: int = 4
 
@@ -252,10 +268,10 @@ class Version16Dot16(tuple[int, int], _ttf_type):
 
 
 # An array of fixed type and length. Supports being an Array of SubTables (even with their own dynamic arrays)
-class Array(tuple, _ttf_type):
+class Array(tuple, TTFType):
     # Array type, the array is ill-formed if this isn't set and creation.
     # If the base Array ever gets a __typ__ value all of hell will break loose (maybe).
-    __typ__: type[_ttf_type] = None
+    __typ__: type[TTFType] = None
     __ln__: int = 0  # Array length (not byte size) 0 is a valid amount
 
     def __new__(cls, b: bytes = b""):
@@ -296,9 +312,7 @@ class Array(tuple, _ttf_type):
 
         return cls(buffer[offset:])
 
-    def __class_getitem__(
-        cls: Self, inp: type[_ttf_type] | int | tuple[_ttf_type, int]
-    ):
+    def __class_getitem__(cls: Self, inp: type[TTFType] | int | tuple[TTFType, int]):
         """
         To follow the convention set by the other TTF types and to reduce the
         teeny tiny boiler-plate Array delves into types metamagic to store
@@ -308,7 +322,9 @@ class Array(tuple, _ttf_type):
         a lot.
         """
         if isinstance(inp, tuple):
-            if len(inp) != 2:
+            if cls.__typ__ is not None:
+                raise ValueError(f"{Array} already has a defined type")
+            elif len(inp) != 2:
                 raise TypeError("{cls} only accepts up to two type arguments")
             typ, ln = inp
 
@@ -316,14 +332,21 @@ class Array(tuple, _ttf_type):
                 raise TypeError(
                     "{cls} only accepts an integer length for the second argument"
                 )
-            if not isinstance(typ, type):
+            elif not isinstance(typ, type):
                 raise TypeError("{cls} only accepts types for the first argument")
 
             newcls = type(cls.__name__, cls.__bases__, dict(**cls.__dict__))
             newcls.__typ__ = typ
             newcls.__ln__ = ln
+
+            # If the type's format and size are static then so it the array's
+            if typ.sz is not None and typ.fmt is not None:
+                newcls.sz = ln * typ.sz
+                newcls.fmt = ln * typ.fmt
             return newcls
         elif isinstance(inp, type):
+            if cls.__typ__ is not None:
+                raise ValueError(f"{Array} already has a defined type")
             newcls = type(cls.__name__, cls.__bases__, dict(**cls.__dict__))
             newcls.__typ__ = inp
             return newcls
@@ -335,6 +358,11 @@ class Array(tuple, _ttf_type):
             )
         else:
             cls.__ln__ = inp
+
+            # If the type's format and size are static then so it the array's
+            if cls.__typ__.sz is not None and cls.__typ__.fmt is not None:
+                cls.sz = inp * cls.__typ__.sz
+                cls.fmt = inp * cls.__typ__.fmt
             return cls
         return cls
 
@@ -354,8 +382,8 @@ class Array(tuple, _ttf_type):
 
 class DynamicFunction(Protocol):
     def __call__(
-        self, *srcs, typ: type[_ttf_type], buffer: bytes, offset: int = 0
-    ) -> _ttf_type: ...
+        self, *srcs, typ: type[TTFType], buffer: bytes, offset: int = 0
+    ) -> TTFType: ...
 
 
 # staticEntry - Found in the table as is (default)
@@ -372,15 +400,42 @@ def dynamic(f: DynamicFunction, *srcs, derived: bool = False):
     )
 
 
-def _parse_static(typ: type[_ttf_type], buffer: bytes, offset: int = 0):
+def array(src: str, derived: bool = False):
+    return dynamic(_parse_semistatic_array, src, derived=derived)
+
+
+def _parse_static(typ: type[TTFType], buffer: bytes, offset: int = 0):
+    # Avoid boilerplater for simplest dynamic case (static) and provide default
     item = typ.read(buffer, offset)
     if item.sz is None or item.fmt is None:
         raise ValueError(f"Failed to create {typ} from buffer {buffer} at {offset}")
     return item
 
 
-class Table(_ttf_type):
-    __versions__: dict[_ttf_type, type[Table]] = None
+def _parse_semistatic_array(
+    src: TTFType, typ: type[TTFType], buffer: bytes, offset: int = 0
+):
+    # Avoid boilerplate for the simple case where the array length is just based on another table element
+    return typ[src].read(buffer, offset)
+
+
+def _find_table_static(tbl: type[Table]) -> tuple[None | str, None | int]:
+    # Attempt to find the static size of a table (or more likely a Record).
+    sz = 0
+    fmt = ""
+    for field in dataclasses.fields(tbl):
+        typ = field.typ
+        if typ.sz is None or typ.fmt is None:
+            break
+        sz += typ.sz
+        fmt += typ.fmt
+    else:
+        return fmt, sz
+    return None, None
+
+
+class Table(TTFType):
+    __versions__: dict[TTFType, type[Table]] = None
 
     @classmethod
     def read(cls: Self, buffer: bytes, offset: int = 0) -> Self:
@@ -389,13 +444,13 @@ class Table(_ttf_type):
             return cls._read(buffer, offset)
 
         version_field = dataclasses.fields(cls)[0]  # Assuming version is always first
-        version_type: _ttf_type = version_field.type
+        version_type: TTFType = version_field.type
         version = version_type.read(buffer, offset)
         print(version)
         return cls.__versions__.get(version, cls)._read(buffer, offset)
 
     @classmethod
-    def read_version(cls: Self, v: _ttf_type, buffer: bytes, offset: int = 0) -> Self:
+    def read_version(cls: Self, v: TTFType, buffer: bytes, offset: int = 0) -> Self:
         if v not in cls.__versions__:
             raise ValueError(f"Version {v} was never defined for {cls}")
         return cls.__versions__[v]._read(buffer, offset)
@@ -405,7 +460,7 @@ class Table(_ttf_type):
         # Many table formats have variable length arrays that make
         # using struct.unpack difficult, but each type still has it fmt.
         fields = dataclasses.fields(cls)
-        values: dict[str, _ttf_type] = {}
+        values: dict[str, TTFType] = {}
         fmt = ""  # Table's final struct fmt
         sz = 0  # Table's final byte size, Also used as the rolling offset
         for field in fields:
@@ -442,12 +497,13 @@ class Table(_ttf_type):
         return obj
 
     @classmethod
-    def version(cls: Self, v: _ttf_type) -> Self:
-        if not isinstance(v, _ttf_type):
+    def version(cls: Self, v: TTFType) -> Self:
+        if not isinstance(v, TTFType):
             raise ValueError(f"{v} is not a ttf type and cannot be used for versioning")
 
         def wrap(subcls: type[Self]):
-            cls.__versions__[v] = dataclasses.dataclass(subcls)
+            subcls = dataclasses.dataclass(subcls)
+            cls.__versions__[v] = subcls
             return cls
 
         return wrap
@@ -469,4 +525,7 @@ def definition(cls: type) -> type[Table]:
         )
     cls = dataclasses.dataclass(cls)
     cls.__versions__ = {}
+
+    # If the
+    cls.fmt, cls.sz = _find_table_static(cls)
     return cls
