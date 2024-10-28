@@ -194,7 +194,8 @@ class LONGDATETIME(int, TTFType):
     sz: int = 8
 
     def __new__(cls: Self, b: bytes = b"\x00\x00\x00\x00\x00\x00\x00\x00") -> Self:
-        return (
+        return int.__new__(
+            cls,
             (b[0] << 56)
             + (b[1] << 48)
             + (b[2] << 40)
@@ -202,7 +203,7 @@ class LONGDATETIME(int, TTFType):
             + (b[4] << 24)
             + (b[5] << 16)
             + (b[6] << 8)
-            + b[7]
+            + b[7],
         )
 
 

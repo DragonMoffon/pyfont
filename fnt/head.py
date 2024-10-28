@@ -1,4 +1,4 @@
-from fnt.type import (
+from fnt.types import (
     definition,
     dynamicEntry,
     arrayEntry,
