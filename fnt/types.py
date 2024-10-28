@@ -24,9 +24,10 @@ __all__ = (
     "Offset32",
     "Version16Dot16",
     "Array",
-    "static",
-    "dynamic",
-    "array",
+    "staticEntry",
+    "dynamicEntry",
+    "arrayEntry",
+    "versionEntry",
     "definition",
     "Table",
 )
@@ -62,10 +63,6 @@ class TTFType:
         if cls.sz is None:
             raise ValueError("Cannot byte {cls} as it is not fully formed")
         return cls(val.to_bytes(length=cls.sz, signed=signed))
-
-
-class TTFEnum:
-    pass
 
 
 class uint8(int, TTFType):
@@ -216,6 +213,12 @@ class Tag(tuple[int, int, int, int], TTFType):
 
     def __new__(cls: Self, b: bytes = b"\x00\x00") -> Self:
         return tuple.__new__(cls, (b[0], b[1], b[2], b[3]))
+
+    def __str__(self) -> str:
+        return f"<{"".join(chr(v) for v in self)}>"
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 # 8-bit offset in table, NULL = 0x00
@@ -369,7 +372,7 @@ class Array(tuple, TTFType):
     def __str__(self) -> str:
         if self.__typ__ is None:
             return f"Invalid[]({','.join(str(item) for item in self)})"
-        return f"{self.__typ__}[{self.__ln__}]({','.join(str(item) for item in self)})"
+        return f"{self.__typ__.__name__}[{self.__ln__}]({','.join(str(item) for item in self)})"
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -382,41 +385,48 @@ class Array(tuple, TTFType):
 
 class DynamicFunction(Protocol):
     def __call__(
-        self, *srcs, typ: type[TTFType], buffer: bytes, offset: int = 0
+        self, *srcs, typ: type[TTFType], buffer: bytes, offset: int = 0, sz: int = 0
     ) -> TTFType: ...
 
 
 # staticEntry - Found in the table as is (default)
+# versionEntry - Found in the table as is, and is used to determine table type.
 # dynamicEntry - Real value must be calcuated, and does not have to be in table by default
 
 
-def static():
+def staticEntry():
     return dataclasses.field(metadata={"entry": "static"})
 
 
-def dynamic(f: DynamicFunction, *srcs, derived: bool = False):
+def versionEntry():
+    return dataclasses.field(metadata={"entry": "version"})
+
+
+def dynamicEntry(f: DynamicFunction, *srcs, derived: bool = False):
     return dataclasses.field(
         metadata={"entry": "dynamic", "derived": derived, "srcs": srcs, "func": f}
     )
 
 
-def array(src: str, derived: bool = False):
-    return dynamic(_parse_semistatic_array, src, derived=derived)
+def arrayEntry(src: str, derived: bool = False):
+    return dynamicEntry(_parse_semistatic_array, src, derived=derived)
 
 
-def _parse_static(typ: type[TTFType], buffer: bytes, offset: int = 0):
+def _parse_static(typ: type[TTFType], buffer: bytes, offset: int = 0, sz: int = 0):
     # Avoid boilerplater for simplest dynamic case (static) and provide default
-    item = typ.read(buffer, offset)
+    item = typ.read(buffer, offset + sz)
     if item.sz is None or item.fmt is None:
-        raise ValueError(f"Failed to create {typ} from buffer {buffer} at {offset}")
+        raise ValueError(
+            f"Failed to create {typ} from buffer {buffer} at {offset} + {sz}"
+        )
     return item
 
 
 def _parse_semistatic_array(
-    src: TTFType, typ: type[TTFType], buffer: bytes, offset: int = 0
+    src: TTFType, typ: type[TTFType], buffer: bytes, offset: int = 0, sz: int = 0
 ):
     # Avoid boilerplate for the simple case where the array length is just based on another table element
-    return typ[src].read(buffer, offset)
+    return typ[src].read(buffer, offset + sz)
 
 
 def _find_table_static(tbl: type[Table]) -> tuple[None | str, None | int]:
@@ -424,7 +434,7 @@ def _find_table_static(tbl: type[Table]) -> tuple[None | str, None | int]:
     sz = 0
     fmt = ""
     for field in dataclasses.fields(tbl):
-        typ = field.typ
+        typ = field.type
         if typ.sz is None or typ.fmt is None:
             break
         sz += typ.sz
@@ -434,26 +444,64 @@ def _find_table_static(tbl: type[Table]) -> tuple[None | str, None | int]:
     return None, None
 
 
+def _make_into_table(cls: type) -> type[Table]:
+    if issubclass(cls, Table):
+        return cls
+
+    # Clone the cls type, but with Table as a parent class
+    bases = cls.__bases__
+    if bases == (object,):
+        bases = ()
+    return type(cls.__name__, bases + (Table,), dict(**cls.__dict__))
+
+
 class Table(TTFType):
     __versions__: dict[TTFType, type[Table]] = None
+
+    def __class_getitem__(cls, version: TTFType | tuple[TTFType, ...]) -> type[Table]:
+        if not isinstance(version, TTFType) and len(version) == 1:
+            version = version[0]
+
+        if cls.__versions__ is None:
+            raise TypeError("Cannot get a table version from a version")
+
+        if version not in cls.__versions__:
+            # This will also fire for tables that have no versions defined, but that's
+            # fine checking for an empty version dict here is redundant.
+            raise ValueError(f"{version} has not been defined as a version of {cls}")
+
+        return cls.__versions__[version]
 
     @classmethod
     def read(cls: Self, buffer: bytes, offset: int = 0) -> Self:
         # No versions were defined so use the default (initial definition)
+        # Or this is a version so it won't have a defined version dictionary
         if not cls.__versions__:
             return cls._read(buffer, offset)
 
-        version_field = dataclasses.fields(cls)[0]  # Assuming version is always first
-        version_type: TTFType = version_field.type
-        version = version_type.read(buffer, offset)
-        print(version)
-        return cls.__versions__.get(version, cls)._read(buffer, offset)
+        # We need to get the version to delegate to the correct defintion
+        # of the table. Which could be multiple fields so we have to find them
+        # all and the offsets to read with.
+        shift = 0
+        version = []
+        for field in dataclasses.fields(cls):
+            entry = field.metadata.get("entry", "static")
+            typ = field.type
 
-    @classmethod
-    def read_version(cls: Self, v: TTFType, buffer: bytes, offset: int = 0) -> Self:
-        if v not in cls.__versions__:
-            raise ValueError(f"Version {v} was never defined for {cls}")
-        return cls.__versions__[v]._read(buffer, offset)
+            if entry == "version":
+                version.append(typ.read(buffer, offset + shift))
+            elif typ.sz is None or entry != "static":
+                raise TypeError(
+                    f"All records preceding the version entries of {cls} must be static"
+                )
+            shift += typ.sz
+
+        if not version:
+            # if no version values were parsed then the table definition is lacking
+            # any version info, but has versions defined.
+            raise TypeError(f"The versioned table {cls} must have version fields")
+
+        return cls[*version]._read(buffer, offset)
 
     @classmethod
     def _read(cls: Self, buffer: bytes, offset: int) -> Self:
@@ -467,7 +515,9 @@ class Table(TTFType):
             typ = field.type  # Metamagic of dataclasses.Field stores the type
             name = field.name  # Name of the Field from the dataclass def
             entry = field.metadata.get("entry", "static")
-            if entry == "static":  # This entry can be read as-is from the buffer
+            if (
+                entry == "static" or entry == "version"
+            ):  # This entry can be read as-is from the buffer
                 item = _parse_static(typ, buffer, offset + sz)
                 values[name] = item
                 sz += item.sz
@@ -477,8 +527,7 @@ class Table(TTFType):
                 derived = field.metadata.get("derived", False)
                 srcs = field.metadata.get("srcs", ())
                 func = field.metadata.get("func", _parse_static)
-
-                item = func(*(values[src] for src in srcs), typ, buffer, offset + sz)
+                item = func(*(values[src] for src in srcs), typ, buffer, offset, sz)
                 values[name] = item
                 if not derived:
                     # If the entry was actually found in the table then we need to
@@ -497,12 +546,21 @@ class Table(TTFType):
         return obj
 
     @classmethod
-    def version(cls: Self, v: TTFType) -> Self:
-        if not isinstance(v, TTFType):
+    def add_version(cls: Self, v: TTFType | tuple[TTFType, ...]) -> Self:
+        if not isinstance(v, (TTFType, tuple)):
             raise ValueError(f"{v} is not a ttf type and cannot be used for versioning")
+        if cls.__versions__ is None:
+            raise TypeError(f"Cannot create a version from another version of {cls}")
 
-        def wrap(subcls: type[Self]):
-            subcls = dataclasses.dataclass(subcls)
+        def wrap(subcls: type):
+            # This may be removed as its not strictly needed, but helps
+            # protect from whoopsies
+            if subcls.__name__ != cls.__name__:
+                raise TypeError(f"{subcls} does not match the name of {cls}")
+
+            # Update the version to be a Table, and a dataclass
+            subcls = dataclasses.dataclass(_make_into_table(subcls))
+            subcls.fmt, subcls.sz = _find_table_static(subcls)
             cls.__versions__[v] = subcls
             return cls
 
@@ -513,19 +571,13 @@ def definition(cls: type) -> type[Table]:
     # A decorator used to define a new table.
     # Ensures that cls is a Table subclass, but
     # also allows for it to be subclassed directly.
-    if not issubclass(cls, Table):
-        # Clone the cls type, but makes Table as a parent class
-        bases = cls.__bases__
-        if bases == (object,):
-            bases = ()
-        cls = type(cls.__name__, bases + (Table,), dict(**cls.__dict__))
-    elif cls.__versions__ is not None:
+    cls = _make_into_table(cls)
+    if cls.__versions__ is not None:
         raise ValueError(
-            f"A table of type {cls} has already been defined use `{cls}.version(<x>)` instead"
+            f"{cls} has already been defined as a table, use {cls}.version(<x>)"
         )
     cls = dataclasses.dataclass(cls)
     cls.__versions__ = {}
 
-    # If the
     cls.fmt, cls.sz = _find_table_static(cls)
     return cls
