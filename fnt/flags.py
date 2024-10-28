@@ -2,7 +2,7 @@
 defintiions of all Flags and Enums found in tables
 """
 
-from fnt.types import uint16, uint32
+from fnt.types import uint16, int16, uint32
 
 
 class sfntVersion:
@@ -88,3 +88,36 @@ class WindowsEncoding:
 
 # Custom supports any from 0-255 see:
 # https://learn.microsoft.com/en-us/typography/opentype/spec/cmap#custom-platform-platform-id--4-and-otf-windows-nt-compatibility-mapping
+
+
+# https://learn.microsoft.com/en-us/typography/opentype/spec/head
+class headFlags:
+    BASELINE0 = 0b0000_0000_0000_0001
+    LEFT0 = 0b0000_0000_0000_0010
+    POINT_SIZE = 0b0000_0000_0000_0100
+    PPEM_INT = 0b0000_0000_0000_1000
+    ALTER_WIDTH = 0b0000_0000_0001_0000
+    RESERVED = 0b1000_0111_1110_0000  # TODO: Check Apple docs
+    LOSSLESS = 0b0000_1000_0000_0000
+    CONVERTED = 0b0001_0000_0001_0000
+    CLEAR_TYPE = 0b0010_0000_0001_0000
+    LAST_RESORT = 0b0100_0000_0001_0000
+
+
+class macStyle:
+    BOLD = 0b0000_0000_0000_0001
+    ITALIC = 0b0000_0000_0000_0010
+    UNDERLINE = 0b0000_0000_0000_0100
+    OUTLINE = 0b0000_0000_0000_1000
+    SHADOW = 0b0000_0000_0001_0000
+    CONDENSED = 0b0000_0000_0010_0000
+    EXTENDED = 0b0000_0000_0100_0000
+    RESERVED = 0b1111_1111_1000_0000
+
+
+class fontDirectionHint:
+    MIXED = int16.byte(0)
+    LEFT_TO_RIGHT = int16.byte(1)
+    LEFT_TO_RIGHT_NEUTRALS = int16.byte(2)
+    RIGHT_TO_LEFT = int16.byte(-1)
+    RIGHT_TO_LEFT_NEUTRALS = int16.byte(-2)
