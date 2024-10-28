@@ -6,101 +6,25 @@ This was also the table that most of types.py was working around.
 Hopefully it was diverse enough to support everything.
 """
 
-# fmt: off
-
-from enum import Enum
-from math import log2, floor
-
-
 from fnt.types import (
     definition,
     uint8,
     uint16,
     int16,
+    uint32,
+    uint24,
     Offset32,
     Array,
-    static,
-    array,
-    dynamic,
+    arrayEntry,
+    dynamicEntry,
+    versionEntry,
 )
-
-
-class Platform(Enum):
-    UNICODE = uint16(b"\x00\x00")
-    MACINTOSH = uint16(b"\x00\x01")
-    ISO = uint16(b"\x00\x02")  # deprecated
-    WINDOWS = uint16(b"\x00\x03")
-    CUSTOM = uint16(b"\x00\x04")
-
-
-class UnicodeEncoding(Enum):
-    UNICODE10 = uint16(b"\x00\x00")  # V 1.0 - deprecated
-    UNICODE11 = uint16(b"\x00\x01")  # V 1.1 - deprecated
-    ISO_IEC = uint16(b"\x00\x02")  # 10646 - deprecated
-    UNICODE2_BMP = uint16(b"\x00\x03")  # Unicode BMP only
-    UNICODE2_FULL = uint16(b"\x00\x04")  # Unicode Full Repitore
-    UNICODE_VAR = uint16(b"\x00\x05")  # Variation Sequences - For format 14
-    UNICODE_FULL = uint16(b"\x00\x06")  # Full repitore - For format 13
-
-
-class MacintoshEncoding(Enum):
-    ROMAN = uint16(b"\x00\x00")
-    JAPANESE = uint16(b"\x00\x01")
-    CHINESE_TRADITIONAL = uint16(b"\x00\x02")
-    KOREAN = uint16(b"\x00\x03")
-    ARABIC = uint16(b"\x00\x04")
-    HEBREW = uint16(b"\x00\x05")
-    GREEK = uint16(b"\x00\x06")
-    RUSSIAN = uint16(b"\x00\x07")
-    RSYMBOL = uint16(b"\x00\x08")
-    DEVANAGARI = uint16(b"\x00\x09")
-    GURMUKHI = uint16(b"\x00\x0A")
-    GUJARATI = uint16(b"\x00\x0B")
-    ODIA = uint16(b"\x00\x0C")
-    BANGLA = uint16(b"\x00\x0D")
-    TAMIL = uint16(b"\x00\x0E")
-    TELUGU = uint16(b"\x00\x0F")
-    KANNADA = uint16(b"\x00\x10")
-    MALAYALAM = uint16(b"\x00\x11")
-    SINHALESE = uint16(b"\x00\x12")
-    BURMESE = uint16(b"\x00\x13")
-    KHMER = uint16(b"\x00\x14")
-    THAI = uint16(b"\x00\x15")
-    LAOTIAN = uint16(b"\x00\x16")
-    GEORGIAN = uint16(b"\x00\x17")
-    ARMENIAN = uint16(b"\x00\x18")
-    CHINESE_SIMPLIFIED = uint16(b"\x00\x19")
-    TIBETAN = uint16(b"\x00\x1A")
-    MONGOLIAN = uint16(b"\x00\x1B")
-    GEEZ = uint16(b"\x00\x1C")
-    SLAVIC = uint16(b"\x00\x1D")
-    VIETNAMESE = uint16(b"\x00\x1E")
-    SINDHI = uint16(b"\x00\x1F")
-    UNINTERPRETED = uint16(b"\x00\x20")
-
-
-class ISOEncoding(Enum):
-    ASCII = uint16(b"\x00\x00")  # 7-bit ASCII
-    ISO_10646 = uint16(b"\x00\x01")  # ISO 10646
-    ISO_8859_1 = uint16(b"\x00\x02")  # ISO 8859-1
-
-
-class WindowsEncoding(Enum):
-    SYMBOL = uint16(b"\x00\x00")
-    UNICODE_BMP = uint16(b"\x00\x00")
-    SHIFTJIS = uint16(b"\x00\x00")
-    PRC = uint16(b"\x00\x00")
-    BIG5 = uint16(b"\x00\x00")
-    WANSUNG = uint16(b"\x00\x00")
-    JOHAB = uint16(b"\x00\x00")
-    RESERVED0 = uint16(b"\x00\x00")
-    RESERVED1 = uint16(b"\x00\x00")
-    RESERVED2 = uint16(b"\x00\x00")
-    UNICODE_FULL = uint16(b"\x00\x00")
-
-
-# Custom supports any from 0-255 see:
-# https://learn.microsoft.com/en-us/typography/opentype/spec/cmap#custom-platform-platform-id--4-and-otf-windows-nt-compatibility-mapping
+from fnt.dynamic import (
+    derive_entrySelector,
+    derive_searchRange,
+    derive_count,
+    derive_rangeShift,
+)
 
 
 @definition
@@ -114,7 +38,7 @@ class EncodingRecord:
 class cmapHeader:
     version: uint16
     numTables: uint16
-    tables: Array[EncodingRecord] = array("numTables")
+    encodingRecords: Array[EncodingRecord] = arrayEntry("numTables")
 
 
 @definition
@@ -127,10 +51,11 @@ class cmapSubHeader:
 
 @definition
 class cmapSubtable:
-    format: uint16  # Only consistent value between tables (is not copied to versions)
+    format: uint16 = versionEntry()
 
 
-@cmapSubtable.version(uint16(b"\x00\x00"))  # i.e. Format 0
+# Byte encoding table
+@cmapSubtable.add_version(uint16.byte(0))
 class cmapSubtable:
     format: uint16
     length: uint16
@@ -138,52 +63,284 @@ class cmapSubtable:
     glyphIdArray: Array[uint8, 256]
 
 
-def parse_subHeaders(
-    keys: Array[uint16, 256], typ: Array[cmapSubHeader], buffer: bytes, offset: int = 0
+def derive_subHeaders(
+    keys: Array[uint16, 256],
+    typ: Array[cmapSubHeader],
+    buffer: bytes,
+    offset: int = 0,
+    sz: int = 0,
 ):
     k_max = max(keys // 8) + 1  # Get the max possible index for the subHeaders
-    return typ[k_max].get(buffer, offset)
+    return typ[k_max].get(buffer, offset + sz)
 
 
-def parse_fmt2_glyphIdArray(
-    subHeaders: Array[cmapSubHeader], typ: Array[uint16], buffer: bytes, offset: int = 0
+def derive_fmt2_glyphIdArray(
+    subHeaders: Array[cmapSubHeader],
+    typ: Array[uint16],
+    buffer: bytes,
+    offset: int = 0,
+    sz: int = 0,
 ):
     # Get the max possible index for the glyphID based on the subHeaders
-    j_max = max(
-        sub_header.firstCode + sub_header.entryCount for sub_header in subHeaders
+    j_max = (
+        max(sub_header.firstCode + sub_header.entryCount for sub_header in subHeaders)
+        + 1
     )
-    return typ[j_max].get(buffer, offset)
+
+    return typ[j_max + 1].get(buffer, offset + sz)
 
 
-@cmapSubtable.version(uint16(b"\x02"))  # i.e. Format 2
+# High byte mapping through table
+@cmapSubtable.add_version(uint16.byte(2))
 class cmapSubtable:
     format: uint16
     length: uint16
     language: uint16
     subHeaderKeys: Array[uint16, 256]
-    subHeaders: Array[cmapSubHeader] = dynamic(parse_subHeaders, "subHeaderKeys")
-    glyphIdArray: Array[uint16] = dynamic(parse_fmt2_glyphIdArray, "subHeaders")
+    subHeaders: Array[cmapSubHeader] = dynamicEntry(derive_subHeaders, "subHeaderKeys")
+    glyphIdArray: Array[uint16] = dynamicEntry(derive_fmt2_glyphIdArray, "subHeaders")
 
 
-def parse_fmt4_glpyhIdArray(
+def derive_fmt4_glpyhIdArray(count, length, typ, buffer, offset, sz):
+    # The complexities of calculating the correct length for the glyphIdArray
+    # mean it is just easier to use the byte length
 
-):
-    pass
+    non_array_sz = 8 * uint16.sz
+    array_sz = 4 * uint16.sz * count
+    ln = (length - non_array_sz - array_sz) // 2
+
+    return typ[ln].read(buffer, offset + sz)
 
 
-@cmapSubtable.version(uint16(b"\x04"))
+def fmt4_character_from_glyph(glyph, encoding: cmapSubtable):
+    raise NotImplementedError("This logic is currently wrong don't use")
+
+    for check_idx in range(encoding.segCount):
+        start_code = encoding.startCode[check_idx]
+        end_code = encoding.endCode[check_idx]
+        id_delta = encoding.idDelta[check_idx]
+        id_offset = encoding.idRangeOffset[check_idx]
+
+        # Because we are trusting that the glyphIdx is in the 0x0000 - 0xFFFF the mod
+        # isn't lossy
+        maybe_idx = (glyph - id_delta) % 0xFFFF
+        if id_offset != 0:
+            # The offset isn't zero so we need to simulate what we would do
+            # using point arithmatic.
+            shift = id_offset // 2 + check_idx - encoding.segCount
+            if 0 <= maybe_idx - shift <= (end_code - start_code):
+                return chr(maybe_idx + start_code - shift)
+        elif start_code <= maybe_idx <= end_code:
+            return chr(maybe_idx)
+
+    return chr(0)  # Null character
+
+
+def fmt4_glyph_from_character(character, encoding: cmapSubtable):
+    o = ord(character)
+    if o > 0xFFFF:
+        raise ValueError(
+            f"<{character}> has ord({ord(character)}) which is too large for format-4"
+        )
+
+    check_idx = -1
+    for idx, code in enumerate(encoding.endCode):
+        if o <= code:
+            check_idx = idx
+            break
+    else:
+        raise ValueError("the endCode array doesn't end with 0xFFFF")
+
+    start_code = encoding.startCode[check_idx]
+    id_delta = encoding.idDelta[check_idx]
+    id_offset = encoding.idRangeOffset[check_idx]
+    if o < start_code:
+        return 0
+    elif id_offset != 0:
+        id_idx = id_offset // 2 + check_idx - encoding.segCount + (o - start_code)
+        if encoding.glyphIdArray[id_idx] == 0:
+            return 0
+        glyph_idx = encoding.glyphIdArray[id_idx]
+    else:
+        glyph_idx = o
+
+    return (glyph_idx + id_delta) % 0xFFFF
+
+
+# Segment mapping to delta values
+@cmapSubtable.add_version(uint16.byte(4))  # i.e. Format 4
 class cmapSubtable:
     format: uint16
     length: uint16
     language: uint16
     segCountX2: uint16
-    segCount: uint16 = dynamic(lambda s, *_: uint16.byte(s//2), "segCountX2", derived=True) # Not part of actual table
-    searchRange: uint16 = dynamic(lambda s, *_: uint16.byte(2 * (2 ** (int(log2(s))))), "segCount") # Only safe to truncate for unsigned ints (find largest power of 2 <= s)
-    entrySelector: uint16 = dynamic(lambda s, *_: uint16.byte(int(log2(s))), "segCount") # Is defined as log2(searchRange/2) but that is log2(floor(segCount))s
-    rangeShift: uint16 = dynamic(lambda s, r, *_: uint16.byte(s - r), "segCountX2", "searchRange")
-    endCode: Array[uint16] = array("segCount")
+    segCount: uint16 = dynamicEntry(derive_count(2), "segCountX2", derived=True)
+    searchRange: uint16 = dynamicEntry(derive_searchRange(2), "segCount")
+    entrySelector: uint16 = dynamicEntry(derive_entrySelector(), "segCount")
+    rangeShift: uint16 = dynamicEntry(derive_rangeShift(2), "segCount", "searchRange")
+    endCode: Array[uint16] = arrayEntry("segCount")
     reservePad: uint16
-    startCode: Array[uint16] = array("segCount")
-    idDelta: Array[uint16] = array("segCount")
-    idRangeOffset: Array[uint16] = array("segCount")
-    glyphIdArray: Array[uint16] = dynamic(parse_fmt4_glpyhIdArray, "segCount")
+    startCode: Array[uint16] = arrayEntry("segCount")
+    idDelta: Array[uint16] = arrayEntry("segCount")
+    idRangeOffset: Array[uint16] = arrayEntry("segCount")
+    glyphIdArray: Array[uint16] = dynamicEntry(
+        derive_fmt4_glpyhIdArray, "segCount", "length"
+    )
+
+
+# Shared by fmt 8 and 12 (and 13 under another name)
+class MapGroup:
+    startCharCode: uint32
+    endCharCode: uint32
+    startGlyphID: uint32
+
+
+SequentialMapGroup = definition(MapGroup)
+ConstantMapGroup = definition(MapGroup)
+
+
+# Trimmed table mapping
+@cmapSubtable.add_version(uint16.byte(6))
+class cmapSubtable:
+    format: uint16
+    length: uint16
+    language: uint16
+    firstCode: uint16
+    entryCount: uint16
+    glyphIdArray: Array[uint16] = arrayEntry("entryCount")
+
+
+# mixed 16-bit and 32-bit coverage
+@cmapSubtable.add_version(uint16.byte(8))
+class cmapSubtable:
+    format: uint16
+    length: uint16
+    language: uint16
+    is32: Array[uint8, 8192]
+    numGroups: uint32
+    groups: Array[SequentialMapGroup] = arrayEntry("numGroups")
+
+
+# Segmented coverage
+@cmapSubtable.add_version(uint16.byte(12))
+class cmapSubtable:
+    format: uint16
+    reserved: uint16
+    length: uint32
+    language: uint32
+    numGroups: uint32
+    groups: Array[SequentialMapGroup] = arrayEntry("numGroups")
+
+
+# Many-to-one range mappings
+@cmapSubtable.add_version(uint16.byte(13))
+class cmapSubtable:
+    format: uint16
+    reserved: uint16
+    length: uint32
+    numGroups: uint32
+    groups: Array[ConstantMapGroup] = arrayEntry("numGroups")
+
+
+# Trimmed array
+@cmapSubtable.add_version(uint16.byte(10))
+class cmapSubtable:
+    format: uint16
+    reserved: uint16
+    length: uint32
+    language: uint32
+    startCharCode: uint32
+    endCharCode: uint32
+    glyphIdArray: Array[uint16] = dynamicEntry(
+        lambda s, e, typ, buffer, offset: typ[e - s + 1].read(buffer, offset),
+        "startCharCode",
+        "endCharCode",
+    )
+
+
+# Used by fmt 14
+@definition
+class VariationSelector:
+    varSelector: uint24
+    defaultUVSOffset: Offset32
+    nonDefaultUVSOffset: Offset32
+
+
+@definition
+class UnicodeValueRange:
+    startUnicodeValue: uint24
+    additionalCount: uint8
+
+
+@definition
+class DefaultUVS:
+    numUnicodeValueRanges: uint32
+    ranges: Array[UnicodeValueRange] = arrayEntry("numUnicodeValueRanges")
+
+
+@definition
+class UVSMapping:
+    unicodeValue: uint24
+    glyphID: uint16
+
+
+@definition
+class NonDefaultUVS:
+    numUVSMappings: uint32
+    uvsMappings: Array[UVSMapping] = arrayEntry("numUVSMappings")
+
+
+def derive_fmt14_UVSDefaultArray(
+    varSelector, typ, buffer, offset: int = 0, sz: int = 0
+):
+    # The Array type expects a packed Contigous buffer, so the byte array needs to be
+    # constructed
+    byterange = b""
+    count = 0
+    for selector in varSelector:
+        o = selector.defaultUVSOffset
+        if o == 0:
+            continue
+        count += 1
+
+        # The first value of the sub table is a uint32 of the count so this is
+        # the most reliable method
+        ln = uint32.read(buffer, offset + o)
+        sz = ln * (uint24.sz + uint8.sz) + uint32.sz
+        byterange += buffer[offset + o : offset + o + sz]
+    return typ[count].read(byterange, 0)
+
+
+def derive_fmt14_UVSNonDefaultArray(
+    varSelector, typ, buffer, offset: int = 0, sz: int = 0
+):
+    # The Array type expects a packed Contigous buffer, so the byte array needs to be
+    # constructed
+    byterange = b""
+    count = 0
+    for selector in varSelector:
+        o = selector.nonDefaultUVSOffset
+        if o == 0:
+            continue
+        count += 1
+
+        ln = uint32.read(buffer, offset + o)
+        sz = ln * (uint24.sz + uint16.sz) + uint32.sz
+        byterange += buffer[offset + o : offset + o + sz]
+    return typ[count].read(byterange, 0)
+
+
+# Unicode variation sequences
+@cmapSubtable.add_version(uint16.byte(14))
+class cmapSubtable:
+    format: uint16
+    length: uint32
+    numVarSelectorRecords: uint32
+    varSelector: Array[VariationSelector] = arrayEntry("numVarSelectorRecords")
+    # Even though they aren't contiguous the varSelector array gives all the info needed to load the UVS tables.
+    defaultUVS: Array[DefaultUVS] = dynamicEntry(
+        derive_fmt14_UVSDefaultArray, "varSelector"
+    )
+    nonDefaultUVS: Array[NonDefaultUVS] = dynamicEntry(
+        derive_fmt14_UVSNonDefaultArray, "varSelector"
+    )
