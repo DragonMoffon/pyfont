@@ -271,6 +271,9 @@ class Version16Dot16(tuple[int, int], TTFType):
         return tuple.__new__(cls, (b[0] << 8 + b[1], (b[2] & 0xF0) >> 4))
 
 
+__ARRAY_TYPES__: dict[type[TTFType] | tuple[TTFType, int], type] = {}
+
+
 # An array of fixed type and length. Supports being an Array of SubTables (even with their own dynamic arrays)
 class Array(tuple, TTFType):
     # Array type, the array is ill-formed if this isn't set and creation.
@@ -325,6 +328,11 @@ class Array(tuple, TTFType):
         doesn't follow suit this code will not work. Also type-checker's hate this
         a lot.
         """
+        if inp in __ARRAY_TYPES__:
+            return __ARRAY_TYPES__[inp]
+        elif (cls.__typ__, inp) in __ARRAY_TYPES__:
+            return __ARRAY_TYPES__[(cls.__typ__, inp)]
+
         if isinstance(inp, tuple):
             if cls.__typ__ is not None:
                 raise ValueError(f"{Array} already has a defined type")
@@ -339,7 +347,7 @@ class Array(tuple, TTFType):
             elif not isinstance(typ, type):
                 raise TypeError("{cls} only accepts types for the first argument")
 
-            newcls = type(cls.__name__, cls.__bases__, dict(**cls.__dict__))
+            newcls = type(f"{typ.__name__}[{ln}]", cls.__bases__, dict(**cls.__dict__))
             newcls.__typ__ = typ
             newcls.__ln__ = ln
 
@@ -347,12 +355,16 @@ class Array(tuple, TTFType):
             if typ.sz is not None and typ.fmt is not None:
                 newcls.sz = ln * typ.sz
                 newcls.fmt = ln * typ.fmt
+
+            __ARRAY_TYPES__[inp] = newcls
             return newcls
         elif isinstance(inp, type):
             if cls.__typ__ is not None:
                 raise ValueError(f"{Array} already has a defined type")
-            newcls = type(cls.__name__, cls.__bases__, dict(**cls.__dict__))
+            newcls = type(f"{inp.__name__}[]", cls.__bases__, dict(**cls.__dict__))
             newcls.__typ__ = inp
+
+            __ARRAY_TYPES__[inp] = newcls
             return newcls
         elif cls.__typ__ is None:
             raise TypeError(f"{cls} is not a fully formed Array")
@@ -361,13 +373,18 @@ class Array(tuple, TTFType):
                 f"{cls} only accepts an integer length when partially formed"
             )
         else:
-            cls.__ln__ = inp
+            newcls = type(
+                f"{cls.__typ__.__name__}[{inp}]", cls.__bases__, dict(**cls.__dict__)
+            )
+            newcls.__ln__ = inp
 
             # If the type's format and size are static then so it the array's
-            if cls.__typ__.sz is not None and cls.__typ__.fmt is not None:
-                cls.sz = inp * cls.__typ__.sz
-                cls.fmt = inp * cls.__typ__.fmt
-            return cls
+            if newcls.__typ__.sz is not None and newcls.__typ__.fmt is not None:
+                newcls.sz = inp * newcls.__typ__.sz
+                newcls.fmt = inp * newcls.__typ__.fmt
+
+            __ARRAY_TYPES__[(newcls.__typ__, inp)] = newcls
+            return newcls
         return cls
 
     def __str__(self) -> str:
@@ -552,6 +569,10 @@ class Table(TTFType):
             raise ValueError(f"{v} is not a ttf type and cannot be used for versioning")
         if cls.__versions__ is None:
             raise TypeError(f"Cannot create a version from another version of {cls}")
+
+        # If the table has versions then the base table has indeterminant size and fmt
+        cls.fmt = None
+        cls.sz = None
 
         def wrap(subcls: type):
             # This may be removed as its not strictly needed, but helps

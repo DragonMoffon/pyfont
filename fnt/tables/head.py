@@ -1,7 +1,5 @@
 from fnt.types import (
     definition,
-    dynamicEntry,
-    arrayEntry,
     uint16,
     int16,
     uint32,

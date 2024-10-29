@@ -42,14 +42,6 @@ class cmapHeader:
 
 
 @definition
-class cmapSubHeader:
-    firstCode: uint16
-    entryCount: uint16
-    idDelta: int16
-    idRangeOffset: int16
-
-
-@definition
 class cmapSubtable:
     format: uint16 = versionEntry()
 
@@ -63,7 +55,16 @@ class cmapSubtable:
     glyphIdArray: Array[uint8, 256]
 
 
-def derive_subHeaders(
+# for fmt 2
+@definition
+class cmapSubHeader:
+    firstCode: uint16
+    entryCount: uint16
+    idDelta: int16
+    idRangeOffset: int16
+
+
+def derive_fmt2_subHeaders(
     keys: Array[uint16, 256],
     typ: Array[cmapSubHeader],
     buffer: bytes,
@@ -97,7 +98,9 @@ class cmapSubtable:
     length: uint16
     language: uint16
     subHeaderKeys: Array[uint16, 256]
-    subHeaders: Array[cmapSubHeader] = dynamicEntry(derive_subHeaders, "subHeaderKeys")
+    subHeaders: Array[cmapSubHeader] = dynamicEntry(
+        derive_fmt2_subHeaders, "subHeaderKeys"
+    )
     glyphIdArray: Array[uint16] = dynamicEntry(derive_fmt2_glyphIdArray, "subHeaders")
 
 
@@ -344,3 +347,16 @@ class cmapSubtable:
     nonDefaultUVS: Array[NonDefaultUVS] = dynamicEntry(
         derive_fmt14_UVSNonDefaultArray, "varSelector"
     )
+
+
+def derive_cmap_subtables(
+    header, typ: Array[cmapSubtable], buffer, offset: int = 0, sz: int = 0
+):
+    unique_offsets = set(encoding.subtableOffset for encoding in header.encodingRecords)
+    return typ[len(unique_offsets)].read(buffer, offset + sz)
+
+
+@definition
+class cmap:
+    header: cmapHeader
+    subTables: Array[cmapSubtable] = dynamicEntry(derive_cmap_subtables, "header")
