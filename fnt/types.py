@@ -268,7 +268,44 @@ class Version16Dot16(tuple[int, int], TTFType):
         # and the lower 16 bits, a minor version. Non-zero minor
         # version numbers are represented using digits 0 to 9 in
         # the highest-order nibbles of the lower 16 bits
-        return tuple.__new__(cls, (b[0] << 8 + b[1], (b[2] & 0xF0) >> 4))
+        return tuple.__new__(cls, ((b[0] << 8) + b[1], (b[2] & 0xF0) >> 4))
+
+
+__RAW_TYPES__: dict[int, type[TTFType]] = {}
+
+
+class raw(bytes, TTFType):
+    fmt: str = None
+    sz: int = None
+
+    def __new__(cls, b: bytes = b""):
+        return bytes.__new__(cls, b)
+
+    @classmethod
+    def read(cls, buffer: bytes, offset: int = 0):
+        if cls.sz is None:
+            raise TypeError(f"{cls} must be given a size via []")
+
+        b = buffer[offset : offset + cls.sz]
+        if len(b) < cls.sz:
+            raise ValueError(f"buffer {buffer} with offset {offset} is to small for {cls}")
+
+        return cls(b)
+
+    def __class_getitem__(cls, sz: int):
+        if not isinstance(sz, int):
+            raise ValueError(f"raw must be provided an int not {sz}")
+        elif cls.sz is not None:
+            raise TypeError(f"This raw has already had its size set to {cls.sz}")
+        elif sz in __RAW_TYPES__:
+            return __RAW_TYPES__[sz]
+
+        newcls = type(f"{cls.__name__}[{sz}]", cls.__bases__, dict(**cls.__dict__))
+        newcls.fmt = "c" * sz
+        newcls.sz = sz
+        __RAW_TYPES__[sz] = newcls
+
+        return newcls
 
 
 __ARRAY_TYPES__: dict[type[TTFType] | tuple[TTFType, int], type] = {}
