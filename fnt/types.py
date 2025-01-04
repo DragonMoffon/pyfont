@@ -288,7 +288,9 @@ class raw(bytes, TTFType):
 
         b = buffer[offset : offset + cls.sz]
         if len(b) < cls.sz:
-            raise ValueError(f"buffer {buffer} with offset {offset} is to small for {cls}")
+            raise ValueError(
+                f"buffer {buffer} with offset {offset} is to small for {cls}"
+            )
 
         return cls(b)
 
@@ -460,6 +462,12 @@ def versionEntry():
 def dynamicEntry(f: DynamicFunction, *srcs, derived: bool = False):
     return dataclasses.field(
         metadata={"entry": "dynamic", "derived": derived, "srcs": srcs, "func": f}
+    )
+
+
+def linkedEntry(table: str, entry: str):
+    return dataclasses.field(
+        metadata={"entry": "linked", "derived": True, "table": table, "source": entry}
     )
 
 

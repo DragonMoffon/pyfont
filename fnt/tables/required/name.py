@@ -2,8 +2,6 @@ from fnt.types import (
     definition,
     versionEntry,
     arrayEntry,
-    dynamicEntry,
-    uint8,
     uint16,
     Offset16,
     Array,
