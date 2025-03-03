@@ -1,8 +1,7 @@
-from fnt.types import uint16, int16, FWORD, UFWORD, Array, definition
+from fnt.types import Table, uint16, int16, FWORD, UFWORD, Array
 
 
-@definition
-class hhea:
+class hhea(Table):
     majorVersion: uint16
     minorVersion: uint16
     ascender: FWORD

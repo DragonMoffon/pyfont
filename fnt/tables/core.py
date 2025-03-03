@@ -1,5 +1,5 @@
 from fnt.types import (
-    definition,
+    Table,
     uint16,
     uint32,
     Offset32,
@@ -12,16 +12,14 @@ from fnt.types import (
 from fnt.dynamic import derive_entrySelector, derive_searchRange, derive_rangeShift
 
 
-@definition
-class TableRecord:
+class TableRecord(Table):
     tableTag: Tag
     checksum: uint32
     offset: Offset32
     length: uint32
 
 
-@definition
-class tableDirectory:
+class tableDirectory(Table):
     sfntVersion: uint32
     numTables: uint16
     searchRange: uint16 = dynamicEntry(derive_searchRange(16), "numTables")
@@ -30,8 +28,7 @@ class tableDirectory:
     tableRecords: Array[TableRecord] = arrayEntry("numTables")
 
 
-@definition
-class TTCHeader:
+class TTCHeader(Table):
     ttcTag: Tag  # Dud value in the base def but here for padding
     majorVersion: uint16 = versionEntry()
     minorVersion: uint16 = versionEntry()

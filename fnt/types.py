@@ -1,6 +1,19 @@
 from __future__ import annotations
-from typing import Self, Protocol
+from fnt.exceptions import (
+    InvalidFieldTypeError,
+    MissingVersionFieldError,
+    IllformedTTFTypeError,
+    TableRedefinitionError,
+)
+from typing import Self, Protocol, TypeVar, TYPE_CHECKING
+from enum import StrEnum
 import dataclasses
+
+if TYPE_CHECKING:
+    # I HATE that some tables require data from other tables,
+    # I'm forcing it to be a specific field type to hopefully control
+    # when this happens
+    from fnt.font import Font
 
 __all__ = (
     "TTFType",
@@ -38,7 +51,7 @@ class TTFType:
     sz: int = None  # Byte size equal to struct.calcsize(cls)
 
     @classmethod
-    def read(cls: Self, buffer: bytes, offset: int = 0) -> Self:
+    def read(cls: Self, buffer: bytes, offset: int = 0, *, font: Font = None) -> Self:
         """
         Return the TTF type extracted from the bytes at the offset in the buffer.
         By default this is bounded by the type's size, but the Table and Array
@@ -46,7 +59,7 @@ class TTFType:
         This means that they won't immediatly throw a ValueError.
         """
         if cls.sz is None:
-            raise TypeError(f"{cls} is not a fully formed ttf type")
+            raise IllformedTTFTypeError(cls)
 
         b = buffer[offset : offset + cls.sz]
         if len(b) < cls.sz:
@@ -63,6 +76,9 @@ class TTFType:
         if cls.sz is None:
             raise ValueError("Cannot byte {cls} as it is not fully formed")
         return cls(val.to_bytes(length=cls.sz, signed=signed))
+
+
+TTF_T = TypeVar("TTF_T", bound=TTFType)
 
 
 class uint8(int, TTFType):
@@ -171,7 +187,7 @@ class F2DOT14(float, TTFType):
     sz: int = 2
 
     def __new__(cls: Self, b: bytes = b"\x00\x00") -> Self:
-        # The F2DOT14 format consists of a signed, 2’s complement integer
+        # The F2DOT14 format consists of a signed, 2's complement integer
         # and an unsigned fraction. To compute the actual value,
         # take the integer and add the fraction.
         integer_bits = 0xC0 & b[0]
@@ -216,10 +232,10 @@ class Tag(tuple[int, int, int, int], TTFType):
         return tuple.__new__(cls, (b[0], b[1], b[2], b[3]))
 
     def __str__(self) -> str:
-        return f"<{"".join(chr(v) for v in self)}>"
+        return "".join(chr(v) for v in self)
 
     def __repr__(self) -> str:
-        return self.__str__()
+        return f"<{self.__str__()}>"
 
 
 # 8-bit offset in table, NULL = 0x00
@@ -282,7 +298,7 @@ class raw(bytes, TTFType):
         return bytes.__new__(cls, b)
 
     @classmethod
-    def read(cls, buffer: bytes, offset: int = 0):
+    def read(cls, buffer: bytes, offset: int = 0, *, font: Font = None) -> Self:
         if cls.sz is None:
             raise TypeError(f"{cls} must be given a size via []")
 
@@ -297,9 +313,9 @@ class raw(bytes, TTFType):
     def __class_getitem__(cls, sz: int):
         if not isinstance(sz, int):
             raise ValueError(f"raw must be provided an int not {sz}")
-        elif cls.sz is not None:
+        if cls.sz is not None:
             raise TypeError(f"This raw has already had its size set to {cls.sz}")
-        elif sz in __RAW_TYPES__:
+        if sz in __RAW_TYPES__:
             return __RAW_TYPES__[sz]
 
         newcls = type(f"{cls.__name__}[{sz}]", cls.__bases__, dict(**cls.__dict__))
@@ -322,7 +338,7 @@ class Array(tuple, TTFType):
 
     def __new__(cls, b: bytes = b""):
         if cls.__typ__ is None:
-            raise TypeError(f"{cls} is not a fully formed Array")
+            raise IllformedTTFTypeError(cls)
 
         # Because the Array's TTF type might be dynamic is size
         # all we can do is iterate over them. This could be shortened to an actual
@@ -344,9 +360,9 @@ class Array(tuple, TTFType):
         return array
 
     @classmethod
-    def read(cls, buffer: bytes, offset: int = 0):
+    def read(cls, buffer: bytes, offset: int = 0, *, font: Font = None) -> Self:
         if cls.__typ__ is None:
-            raise TypeError(f"{cls} is not a fully formed Array")
+            raise IllformedTTFTypeError(cls)
 
         if cls.__typ__.sz is not None:
             b = buffer[offset : offset + cls.__ln__ * cls.__typ__.sz]
@@ -375,7 +391,7 @@ class Array(tuple, TTFType):
         if isinstance(inp, tuple):
             if cls.__typ__ is not None:
                 raise ValueError(f"{Array} already has a defined type")
-            elif len(inp) != 2:
+            if len(inp) != 2:
                 raise TypeError("{cls} only accepts up to two type arguments")
             typ, ln = inp
 
@@ -383,7 +399,7 @@ class Array(tuple, TTFType):
                 raise TypeError(
                     "{cls} only accepts an integer length for the second argument"
                 )
-            elif not isinstance(typ, type):
+            if not isinstance(typ, type):
                 raise TypeError("{cls} only accepts types for the first argument")
 
             newcls = type(f"{typ.__name__}[{ln}]", cls.__bases__, dict(**cls.__dict__))
@@ -406,7 +422,7 @@ class Array(tuple, TTFType):
             __ARRAY_TYPES__[inp] = newcls
             return newcls
         elif cls.__typ__ is None:
-            raise TypeError(f"{cls} is not a fully formed Array")
+            raise IllformedTTFTypeError(cls)
         elif not isinstance(inp, int):
             raise TypeError(
                 f"{cls} only accepts an integer length when partially formed"
@@ -442,42 +458,70 @@ class Array(tuple, TTFType):
 
 class DynamicFunction(Protocol):
     def __call__(
-        self, *srcs, typ: type[TTFType], buffer: bytes, offset: int = 0, sz: int = 0
+        self,
+        *srcs: TTFType,
+        typ: type[TTFType],
+        buffer: bytes,
+        offset: int = 0,
+        sz: int = 0,
     ) -> TTFType: ...
 
 
 # staticEntry - Found in the table as is (default)
 # versionEntry - Found in the table as is, and is used to determine table type.
 # dynamicEntry - Real value must be calcuated, and does not have to be in table by default
+# linkedEntry - Relies on values from other tables.
+# arrayentry - A util form of dynamic entry that makes it easy to fetch the size defined in earlier values
 
 
-def staticEntry():
-    return dataclasses.field(metadata={"entry": "static"})
+class EntryType(StrEnum):
+    STATIC = "static"
+    VERSION = "version"
+    DYNAMIC = "dynamic"
+    LINKED = "linked"
 
 
-def versionEntry():
-    return dataclasses.field(metadata={"entry": "version"})
+def staticEntry() -> dataclasses.Field:
+    return dataclasses.field(metadata={"entry": EntryType.STATIC})
 
 
-def dynamicEntry(f: DynamicFunction, *srcs, derived: bool = False):
+def versionEntry() -> dataclasses.Field:
+    return dataclasses.field(metadata={"entry": EntryType.VERSION})
+
+
+def dynamicEntry(
+    f: DynamicFunction, *srcs: str, derived: bool = False
+) -> dataclasses.Field:
     return dataclasses.field(
-        metadata={"entry": "dynamic", "derived": derived, "srcs": srcs, "func": f}
+        metadata={
+            "entry": EntryType.DYNAMIC,
+            "derived": derived,
+            "srcs": srcs,
+            "func": f,
+        }
     )
 
 
-def linkedEntry(table: str, entry: str):
+def linkedEntry(table: str, entry: str) -> dataclasses.Field:
     return dataclasses.field(
-        metadata={"entry": "linked", "derived": True, "table": table, "source": entry}
+        metadata={
+            "entry": EntryType.LINKED,
+            "derived": True,
+            "table": table,
+            "source": entry,
+        }
     )
 
 
-def arrayEntry(src: str, derived: bool = False):
+def arrayEntry(src: str, *, derived: bool = False) -> dataclasses.Field:
     return dynamicEntry(_parse_semistatic_array, src, derived=derived)
 
 
-def _parse_static(typ: type[TTFType], buffer: bytes, offset: int = 0, sz: int = 0):
+def _parse_static(
+    typ: type[TTF_T], buffer: bytes, offset: int = 0, sz: int = 0, *, file: File = None
+) -> TTF_T:
     # Avoid boilerplater for simplest dynamic case (static) and provide default
-    item = typ.read(buffer, offset + sz)
+    item = typ.read(buffer, offset + sz, font=file)
     if item.sz is None or item.fmt is None:
         raise ValueError(
             f"Failed to create {typ} from buffer {buffer} at {offset} + {sz}"
@@ -486,8 +530,8 @@ def _parse_static(typ: type[TTFType], buffer: bytes, offset: int = 0, sz: int = 
 
 
 def _parse_semistatic_array(
-    src: TTFType, typ: type[TTFType], buffer: bytes, offset: int = 0, sz: int = 0
-):
+    src: TTFType, typ: type[TTF_T], buffer: bytes, offset: int = 0, sz: int = 0
+) -> TTF_T:
     # Avoid boilerplate for the simple case where the array length is just based on another table element
     return typ[src].read(buffer, offset + sz)
 
@@ -515,10 +559,31 @@ def _make_into_table(cls: type) -> type[Table]:
     bases = cls.__bases__
     if bases == (object,):
         bases = ()
-    return type(cls.__name__, bases + (Table,), dict(**cls.__dict__))
+    return type(
+        cls.__name__,
+        (
+            *bases,
+            Table,
+        ),
+        dict(**cls.__dict__),
+    )
 
 
-class Table(TTFType):
+class Definition(type):
+    def __new__(cls, name, bases, dct):
+        table = type.__new__(cls, name, bases, dct)
+        if name == "Table":
+            return table
+
+        table = dataclasses.dataclass(table)
+
+        table.__versions__ = {}
+
+        table.fmt, table.sz = _find_table_static(table)
+        return table
+
+
+class Table(TTFType, metaclass=Definition):
     __versions__: dict[TTFType, type[Table]] = None
 
     def __class_getitem__(cls, version: TTFType | tuple[TTFType, ...]) -> type[Table]:
@@ -535,12 +600,16 @@ class Table(TTFType):
 
         return cls.__versions__[version]
 
+    def __getitem__(self, entry: str) -> TTFType:
+        # TODO: Add strictness when it comes to different table versions
+        return getattr(self, entry)
+
     @classmethod
-    def read(cls: Self, buffer: bytes, offset: int = 0) -> Self:
+    def read(cls: Self, buffer: bytes, offset: int = 0, *, font: Font = None) -> Self:
         # No versions were defined so use the default (initial definition)
         # Or this is a version so it won't have a defined version dictionary
         if not cls.__versions__:
-            return cls._read(buffer, offset)
+            return cls._read(buffer, offset, font=font)
 
         # We need to get the version to delegate to the correct defintion
         # of the table. Which could be multiple fields so we have to find them
@@ -562,12 +631,12 @@ class Table(TTFType):
         if not version:
             # if no version values were parsed then the table definition is lacking
             # any version info, but has versions defined.
-            raise TypeError(f"The versioned table {cls} must have version fields")
+            raise MissingVersionFieldError(cls)
 
-        return cls[*version]._read(buffer, offset)
+        return cls[*version]._read(buffer, offset, font=font)
 
     @classmethod
-    def _read(cls: Self, buffer: bytes, offset: int) -> Self:
+    def _read(cls: Self, buffer: bytes, offset: int, *, font: Font = None) -> Self:
         # Many table formats have variable length arrays that make
         # using struct.unpack difficult, but each type still has it fmt.
         fields = dataclasses.fields(cls)
@@ -577,15 +646,15 @@ class Table(TTFType):
         for field in fields:
             typ = field.type  # Metamagic of dataclasses.Field stores the type
             name = field.name  # Name of the Field from the dataclass def
-            entry = field.metadata.get("entry", "static")
+            entry = field.metadata.get("entry", EntryType.STATIC)
             if (
-                entry == "static" or entry == "version"
+                entry == EntryType.STATIC or entry == EntryType.VERSION
             ):  # This entry can be read as-is from the buffer
                 item = _parse_static(typ, buffer, offset + sz)
                 values[name] = item
                 sz += item.sz
                 fmt += item.fmt
-            elif entry == "dynamic":
+            elif entry == EntryType.DYNAMIC:
                 # This entry has to be modified/derived instead of the raw value
                 derived = field.metadata.get("derived", False)
                 srcs = field.metadata.get("srcs", ())
@@ -597,10 +666,12 @@ class Table(TTFType):
                     # offset the buffer, and add it to the format string.
                     sz += item.sz
                     fmt += item.fmt
+            elif entry == EntryType.LINKED:
+                item = font.get_table(field.metadata["table"])[field.metadata["source"]]
+                values[name] = item
+                # A Linked item is always derived and shouldn't be accounted for.
             else:
-                raise TypeError(
-                    f'Table entry type {entry} is not supported, use "static" or "dynamic"'
-                )
+                raise InvalidFieldTypeError(entry)
 
         obj = cls(*values.values())
         obj.fmt = fmt
@@ -610,7 +681,7 @@ class Table(TTFType):
 
     @classmethod
     def add_version(cls: Self, v: TTFType | tuple[TTFType, ...]) -> Self:
-        if not isinstance(v, (TTFType, tuple)):
+        if not isinstance(v, TTFType | tuple):
             raise ValueError(f"{v} is not a ttf type and cannot be used for versioning")
         if cls.__versions__ is None:
             raise TypeError(f"Cannot create a version from another version of {cls}")
@@ -619,16 +690,15 @@ class Table(TTFType):
         cls.fmt = None
         cls.sz = None
 
-        def wrap(subcls: type):
-            # This may be removed as its not strictly needed, but helps
-            # protect from whoopsies
-            if subcls.__name__ != cls.__name__:
-                raise TypeError(f"{subcls} does not match the name of {cls}")
-
+        def wrap(subcls: type) -> Self:
             # Update the version to be a Table, and a dataclass
-            subcls = dataclasses.dataclass(_make_into_table(subcls))
-            subcls.fmt, subcls.sz = _find_table_static(subcls)
+            subcls = _make_into_table(subcls)
+            subcls.__versions__ = None
             cls.__versions__[v] = subcls
+
+            # Helps with typing when needed
+            if subcls.__name__ != cls.__name__:
+                return subcls
             return cls
 
         return wrap
@@ -638,13 +708,4 @@ def definition(cls: type) -> type[Table]:
     # A decorator used to define a new table.
     # Ensures that cls is a Table subclass, but
     # also allows for it to be subclassed directly.
-    cls = _make_into_table(cls)
-    if cls.__versions__ is not None:
-        raise ValueError(
-            f"{cls} has already been defined as a table, use {cls}.version(<x>)"
-        )
-    cls = dataclasses.dataclass(cls)
-    cls.__versions__ = {}
-
-    cls.fmt, cls.sz = _find_table_static(cls)
-    return cls
+    return _make_into_table(cls)

@@ -7,6 +7,7 @@ Hopefully it was diverse enough to support everything.
 """
 
 from fnt.types import (
+    Table,
     definition,
     uint8,
     uint16,
@@ -26,23 +27,22 @@ from fnt.dynamic import (
     derive_rangeShift,
 )
 
+__all__ = ("EncodingRecord", "cmapHeader", "cmapSubtable", "cmapSub")
 
-@definition
-class EncodingRecord:
+
+class EncodingRecord(Table):
     platformID: uint16
     encodingID: uint16
     subtableOffset: Offset32
 
 
-@definition
-class cmapHeader:
+class cmapHeader(Table):
     version: uint16
     numTables: uint16
     encodingRecords: Array[EncodingRecord] = arrayEntry("numTables")
 
 
-@definition
-class cmapSubtable:
+class cmapSubtable(Table):
     format: uint16 = versionEntry()
 
 
@@ -56,8 +56,7 @@ class cmapSubtable:
 
 
 # for fmt 2
-@definition
-class cmapSubHeader:
+class cmapSubHeader(Table):
     firstCode: uint16
     entryCount: uint16
     idDelta: int16
@@ -262,33 +261,28 @@ class cmapSubtable:
 
 
 # Used by fmt 14
-@definition
-class VariationSelector:
+class VariationSelector(Table):
     varSelector: uint24
     defaultUVSOffset: Offset32
     nonDefaultUVSOffset: Offset32
 
 
-@definition
-class UnicodeValueRange:
+class UnicodeValueRange(Table):
     startUnicodeValue: uint24
     additionalCount: uint8
 
 
-@definition
-class DefaultUVS:
+class DefaultUVS(Table):
     numUnicodeValueRanges: uint32
     ranges: Array[UnicodeValueRange] = arrayEntry("numUnicodeValueRanges")
 
 
-@definition
-class UVSMapping:
+class UVSMapping(Table):
     unicodeValue: uint24
     glyphID: uint16
 
 
-@definition
-class NonDefaultUVS:
+class NonDefaultUVS(Table):
     numUVSMappings: uint32
     uvsMappings: Array[UVSMapping] = arrayEntry("numUVSMappings")
 
@@ -356,7 +350,6 @@ def derive_cmap_subtables(
     return typ[len(unique_offsets)].read(buffer, offset + sz)
 
 
-@definition
-class cmap:
+class cmap(Table):
     header: cmapHeader
     subTables: Array[cmapSubtable] = dynamicEntry(derive_cmap_subtables, "header")

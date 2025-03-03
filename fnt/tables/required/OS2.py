@@ -1,5 +1,5 @@
 from fnt.types import (
-    definition,
+    Table,
     versionEntry,
     Tag,
     int8,
@@ -12,8 +12,7 @@ from fnt.types import (
 )
 
 
-@definition
-class OS2:
+class OS2(Table):
     version: uint16 = versionEntry()
 
 

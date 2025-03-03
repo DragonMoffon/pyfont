@@ -1,21 +1,25 @@
-from fnt.types import uint16, definition, FWORD, UFWORD, Array, dynamicEntry
+from fnt.types import (
+    Table,
+    uint16,
+    FWORD,
+    UFWORD,
+    Array,
+    dynamicEntry,
+    arrayEntry,
+    linkedEntry,
+)
 
 
-@definition
-class LongHorMetric:
+class LongHorMetric(Table):
     advanceWidth: UFWORD
     lsb: FWORD
 
 
-# TODO: Find way to pass in other table values
-
-def derive_hMetrics():
-    # Todo, find way to derive this table
-    pass
-
-
-@definition
-class hmtx:
-    numOfHMetrics: 
-    hMetrics: Array[LongHorMetric] = dynamicEntry(lambda: NotImplemented)
-    leftSideBearing: Array[FWORD] = dynamicEntry(lambda: NotImplemented)
+class hmtx(Table):
+    numOfHMetrics: uint16 = linkedEntry("hhea", "numberOfHMetrics")
+    numGlyphs: uint16 = linkedEntry("maxp", "numGlyphs")
+    diff: uint16 = dynamicEntry(
+        lambda m, g, *_: uint16.byte(g - m), "numOfHMetrics", "numGlyphs"
+    )
+    hMetrics: Array[LongHorMetric] = arrayEntry("numOfHMetrics")
+    leftSideBearing: Array[FWORD] = arrayEntry("diff")

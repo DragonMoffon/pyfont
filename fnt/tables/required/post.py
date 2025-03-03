@@ -1,5 +1,5 @@
 from fnt.types import (
-    definition,
+    Table,
     versionEntry,
     arrayEntry,
     dynamicEntry,
@@ -14,8 +14,7 @@ from fnt.types import (
 )
 
 
-@definition
-class post:
+class post(Table):
     version: Version16Dot16 = versionEntry()
 
 
@@ -32,8 +31,7 @@ class post:
     maxMemType1: uint32
 
 
-@definition
-class PascalString:
+class PascalString(Table):
     length: uint8
     chars: Array[uint8] = arrayEntry("length")
 

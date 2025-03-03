@@ -1,8 +1,7 @@
-from fnt.types import definition, Version16Dot16, uint16, versionEntry
+from fnt.types import Table, Version16Dot16, uint16, versionEntry
 
 
-@definition
-class maxp:
+class maxp(Table):
     version: Version16Dot16 = versionEntry()
 
 

@@ -1,5 +1,5 @@
 from fnt.types import (
-    definition,
+    Table,
     uint16,
     int16,
     uint32,
@@ -8,8 +8,7 @@ from fnt.types import (
 )
 
 
-@definition
-class head:
+class head(Table):
     majorVersion: uint16
     minorVersion: uint16
     fontRevision: fixed

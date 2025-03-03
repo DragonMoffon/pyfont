@@ -1,5 +1,5 @@
 from fnt.types import (
-    definition,
+    Table,
     versionEntry,
     arrayEntry,
     uint16,
@@ -8,8 +8,7 @@ from fnt.types import (
 )
 
 
-@definition
-class NameRecord:
+class NameRecord(Table):
     platformID: uint16
     encodingID: uint16
     languageID: uint16
@@ -18,14 +17,12 @@ class NameRecord:
     stringOffset: Offset16
 
 
-@definition
-class LangTagRecord:
+class LangTagRecord(Table):
     length: uint16
     langTagOffset: Offset16
 
 
-@definition
-class name:
+class name(Table):
     version: uint16 = versionEntry()
 
 
