@@ -60,3 +60,47 @@ TABLES: dict[str, type[Table]] = {
     # OpenType Font Variations
     # Other
 }
+
+
+"""
+True Type Tables:
+    acnt (accent attachment)
+    ankr (anchor point)
+    avar (axis variation)
+    bdat (bitmap data)
+    bhed (bitmap font header)
+    bloc (bitmap location)
+    bsln (baseline)
+    cvar (CVT variation)
+    cvt (control value)
+    EBSC (embedded bitmap scaling control)
+    fdsc (font descriptor)
+    feat (layout feature)
+    fmtx (font metrics)
+    fond (font family compatibility)
+    fpgm (font program)
+    fvar (font variation)
+    gasp (grid-fitting and scan-conversion procedure)
+    glyf (glyph outline)
+    gvar (glyph variation)
+    hdmx (horizontal device metrics)
+    just (justification)
+    kern (kerning)
+    kerx (extended kerning)
+    lcar (ligature caret)
+    loca (glyph location)
+    ltag (language tag)
+    meta (metadata)
+    mort (metamorphosis) table (deprecated)
+    morx (extended metamorphosis)
+    opbd (optical bounds)
+    post (glyph name and PostScript compatibility)
+    prep (control value program)
+    prop (properties)
+    sbix (extended bitmaps)
+    trak (tracking)
+    vhea (vertical header)
+    vmtx (vertical metrics)
+    xref (cross-reference)
+    Zapf (glyph reference)
+"""

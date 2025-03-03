@@ -1,7 +1,5 @@
 from fnt.types import Table, uint16, uint32, Offset32, Array, arrayEntry, dynamicEntry
 
-par
-
 # TODO, provide method for retrieving svg string
 
 
@@ -32,5 +30,5 @@ class SVG(Table):
     svgDocumentListOffset: Offset32
     reserved: uint32
     svgDocumentList: SVGDocumentList = dynamicEntry(
-        derive_svgDocumentList, "svgDocumentListOffset"
+        derive_svgDocumentList, "svgDocumentListOffset", derived=True
     )

@@ -5,7 +5,7 @@ from .tables import TABLES, Table, tableDirectory, TableRecord
 
 # Abstract
 class Font:
-    def get_tables(self) -> dict[str, Table]: ...
+    def get_tables(self) -> tuple[str, ...]: ...
 
     def get_table(self, name: str) -> Table | None: ...
 
@@ -30,8 +30,9 @@ class FileFont(Font):
             self._name_mapping[str(record.tableTag)] = record
         self._tables["tableDirectory"] = root
 
-    def get_tables(self) -> dict[str, Table]:
-        return self._tables
+    def get_tables(self) -> tuple[str, ...]:
+        union = set((*self._name_mapping.keys(), *self._tables.keys()))
+        return tuple(sorted(union))
 
     def get_table[TableType: Table](self, name: str) -> TableType | None:
         if name not in TABLES:
