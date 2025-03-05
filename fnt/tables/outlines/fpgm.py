@@ -1,6 +1,6 @@
-from fnt.types import Table, uint8, uint32, Array, arrayEntry, linkedEntry
+from fnt.types import Table, arrayEntry, propertyEntry, Array, uint8, uint32
 
 
 class fpgm(Table):
-    count: uint32 = linkedEntry()  # TODO, figure out where this value comes from
-    instuctions: Array[uint8] = arrayEntry("")
+    _length: uint32 = propertyEntry()
+    program: Array[uint8] = arrayEntry("_length")

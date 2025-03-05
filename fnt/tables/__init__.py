@@ -13,8 +13,12 @@ from .required.post import post
 
 # TrueType Outlines
 
-from .outlines.loca import loca
+from .outlines.cvt import cvt
+from .outlines.fpgm import fpgm
 from .outlines.glyf import glyf
+from .outlines.loca import loca
+from .outlines.prep import prep
+from .outlines.gasp import gasp
 
 # CFF Outlines
 
@@ -52,8 +56,13 @@ TABLES: dict[str, type[Table]] = {
     "OS/2": OS2,
     post.__name__: post,
     # True Type Outlines
-    loca.__name__: loca,
+    cvt.__name__: cvt,
+    "cvt ": cvt,
+    fpgm.__name__: fpgm,
     glyf.__name__: glyf,
+    loca.__name__: loca,
+    prep.__name__: prep,
+    gasp.__name__: gasp,
     # CFF Outlines
     # SVG Outlines
     SVG.__name__: SVG,

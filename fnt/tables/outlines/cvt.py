@@ -1,6 +1,8 @@
-from fnt.types import Table, Array, uint32, FWORD, arrayEntry, linkedEntry
+from fnt.types import Table, dynamicEntry, propertyEntry, Array, FWORD, uint32
 
 
 class cvt(Table):
-    count: uint32 = linkedEntry()  # TODO, figure out where this value comes from
-    variables: Array[FWORD] = arrayEntry("count")
+    _length: uint32 = propertyEntry()
+    program: Array[FWORD] = dynamicEntry(
+        lambda l, t, b, o, s: t[l // 2].read(b, o + s), "length"
+    )

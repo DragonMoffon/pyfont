@@ -132,3 +132,11 @@ class SimpleGlyphFlags:
     Y_IS_SAME_OR_POSITIVE_Y_SHORT_VECTOR = uint8.byte(0x20)
     OVERLAP_SIMPLE = uint8.byte(0x40)
     Reserved = uint8.byte(0x80)
+
+
+class GaspFlags:
+    GASP_GRIDFIT = uint16.byte(0x0001)
+    GASP_DOGRAY = uint16.byte(0x0002)
+    GASP_SYMMETRIC_GRIDFIT = uint16.byte(0x0004)
+    GASP_SYMMETRIC_SMOOTHING = uint16.byte(0x0008)
+    Reserved = uint16.byte(0xFFF0)
