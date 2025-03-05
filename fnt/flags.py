@@ -2,7 +2,7 @@
 defintiions of all Flags and Enums found in tables
 """
 
-from fnt.types import uint16, int16, uint32
+from fnt.types import uint8, uint16, int16, uint32
 
 
 class sfntVersion:
@@ -117,7 +117,18 @@ class macStyle:
 
 class fontDirectionHint:
     MIXED = int16.byte(0)
-    LEFT_TO_RIGHT = int16.byte(1)
+    LEFT_TO_RIGHT = int16.byte(1, signed=True)
     LEFT_TO_RIGHT_NEUTRALS = int16.byte(2)
-    RIGHT_TO_LEFT = int16.byte(-1)
-    RIGHT_TO_LEFT_NEUTRALS = int16.byte(-2)
+    RIGHT_TO_LEFT = int16.byte(-1, signed=True)
+    RIGHT_TO_LEFT_NEUTRALS = int16.byte(-2, signed=True)
+
+
+class SimpleGlyphFlags:
+    ON_CURVE_POINT = uint8.byte(0x01)
+    X_SHORT_VECTOR = uint8.byte(0x02)
+    Y_SHORT_VECTOR = uint8.byte(0x04)
+    REPEAT_FLAG = uint8.byte(0x08)
+    X_IS_SAME_OR_POSITIVE_X_SHORT_VECTOR = uint8.byte(0x10)
+    Y_IS_SAME_OR_POSITIVE_Y_SHORT_VECTOR = uint8.byte(0x20)
+    OVERLAP_SIMPLE = uint8.byte(0x40)
+    Reserved = uint8.byte(0x80)

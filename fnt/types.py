@@ -64,7 +64,8 @@ class TTFType:
         b = buffer[offset : offset + cls.sz]
         if len(b) < cls.sz:
             raise ValueError(
-                f"buffer {buffer} with offset {offset} is too small for {cls}"
+                "buffer is too small"
+                # f"buffer {buffer} with offset {offset} is too small for {cls}"
             )
 
         return cls(b)
@@ -352,13 +353,31 @@ class Array(tuple, TTFType):
             items[idx] = item = cls.__typ__.read(b, sz)
             if item.sz is None or item.fmt is None:
                 raise ValueError(
-                    f"failed to create a fully formed ttf item of type {cls.__typ__} in {cls} from buffer {b} at offset {sz}"
+                    f"failed to create a fully formed ttf item of type {cls.__typ__} in {cls}"
                 )
             sz += item.sz
 
         array = tuple.__new__(cls, items)
         array.fmt = "".join(item.fmt for item in array)
         array.sz = sz
+
+        return array
+
+    @classmethod
+    def force(cls, *items: TTFType):
+        if cls.__typ__ is None:
+            raise IllformedTTFTypeError(cls)
+
+        if not items:
+            return cls()
+
+        if cls.__ln__ != len(items):
+            raise ValueError(f"{cls} must have exactly {cls.__ln__} items")
+        cls = cls[len(items)]
+
+        array = tuple.__new__(cls, items)
+        array.fmt = "".join(item.fmt for item in array)
+        array.sz = sum(item.sz for item in items)
 
         return array
 
@@ -370,9 +389,7 @@ class Array(tuple, TTFType):
         if cls.__typ__.sz is not None:
             b = buffer[offset : offset + cls.__ln__ * cls.__typ__.sz]
             if len(b) < cls.__ln__ * cls.__typ__.sz:
-                raise ValueError(
-                    f"buffer {buffer} with offset {offset} is too small for {cls}"
-                )
+                raise ValueError(f"buffer is too small for {cls}")
             return cls(b)
 
         return cls(buffer[offset:])
@@ -501,6 +518,7 @@ def dynamicEntry(
             "derived": derived,
             "srcs": srcs,
             "func": f,
+            "version": version,
         }
     )
 
@@ -512,18 +530,26 @@ def linkedEntry(table: str, entry: str, version: bool = False) -> dataclasses.Fi
             "derived": True,
             "table": table,
             "source": entry,
+            "version": version,
         }
     )
 
 
-def propertyEntry(prop: str = "length") -> dataclasses.Field:
+def propertyEntry(prop: str = "length", version: bool = False) -> dataclasses.Field:
     return dataclasses.field(
-        metadata={"entry": EntryType.PROPERTY, "derived": True, "property": prop}
+        metadata={
+            "entry": EntryType.PROPERTY,
+            "derived": True,
+            "property": prop,
+            "version": version,
+        }
     )
 
 
-def arrayEntry(src: str, *, derived: bool = False) -> dataclasses.Field:
-    return dynamicEntry(_parse_semistatic_array, src, derived=derived)
+def arrayEntry(
+    src: str, *, derived: bool = False, version: bool = False
+) -> dataclasses.Field:
+    return dynamicEntry(_parse_semistatic_array, src, derived=derived, version=version)
 
 
 def _parse_static(
@@ -627,7 +653,32 @@ class Table(TTFType, metaclass=Definition):
         return getattr(self, entry)
 
     @classmethod
-    def find_version(cls: Self, buffer: bytes, offset: int = 0) -> type[Table]:
+    def find_version(
+        cls: Self, record: TableRecord, font: Font, buffer: bytes
+    ) -> type[Table]:
+        # No versions were defined so use the default (initial definition)
+        # Or this is a version so it won't have a defined version dictionary
+        if not cls.__versions__ and not cls.__selectors__:
+            return cls
+
+        # We need to get the version to delegate to the correct defintion
+        # of the table. Which could be multiple fields so we have to find them
+        # all and the offsets to read with.
+        obj = cls._parse(record, font, buffer)
+        version = []
+        for field in dataclasses.fields(cls):
+            if field.metadata.get("version", False):
+                version.append(obj[field.name])
+
+        if not version:
+            # if no version values were parsed then the table definition is lacking
+            # any version info, but has versions defined.
+            raise MissingVersionFieldError(cls)
+
+        return cls[*version]
+
+    @classmethod
+    def find_static_version(cls: Self, buffer: bytes, offset: int = 0) -> Self:
         # No versions were defined so use the default (initial definition)
         # Or this is a version so it won't have a defined version dictionary
         if not cls.__versions__ and not cls.__selectors__:
@@ -651,12 +702,15 @@ class Table(TTFType, metaclass=Definition):
 
     @classmethod
     def parse(cls: Self, record: TableRecord, font: Font, buffer: btyes) -> Self:
+        cls = cls.find_version(record, font, buffer)
+        return cls._parse(record, font, buffer)
+
+    @classmethod
+    def _parse(cls: Self, record: TableRecord, font: Font, buffer: btyes):
         entries: dict[str, TTFType] = {}
         fmt = ""  # Table's final struct fmt
         sz = 0  # Table's final byte size, Also used as the rolling offset
         offset = record.offset
-
-        cls = cls.find_version(buffer, record.offset)
 
         for field in dataclasses.fields(cls):
             typ = field.type
@@ -703,7 +757,7 @@ class Table(TTFType, metaclass=Definition):
 
     @classmethod
     def read(cls: Self, buffer: bytes, offset: int = 0) -> Self:
-        cls = cls.find_version(buffer, offset)
+        cls = cls.find_static_version(buffer, offset)
         return cls._read(buffer, offset)
 
     @classmethod

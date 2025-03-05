@@ -13,7 +13,8 @@ from .required.post import post
 
 # TrueType Outlines
 
-# TODO
+from .outlines.loca import loca
+from .outlines.glyf import glyf
 
 # CFF Outlines
 
@@ -51,6 +52,8 @@ TABLES: dict[str, type[Table]] = {
     "OS/2": OS2,
     post.__name__: post,
     # True Type Outlines
+    loca.__name__: loca,
+    glyf.__name__: glyf,
     # CFF Outlines
     # SVG Outlines
     SVG.__name__: SVG,

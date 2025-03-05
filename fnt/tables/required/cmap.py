@@ -176,17 +176,17 @@ class cmapSubtable:
     length: uint16
     language: uint16
     segCountX2: uint16
-    segCount: uint16 = dynamicEntry(derive_count(2), "segCountX2", derived=True)
-    searchRange: uint16 = dynamicEntry(derive_searchRange(2), "segCount")
-    entrySelector: uint16 = dynamicEntry(derive_entrySelector(), "segCount")
-    rangeShift: uint16 = dynamicEntry(derive_rangeShift(2), "segCount", "searchRange")
-    endCode: Array[uint16] = arrayEntry("segCount")
+    _segCount: uint16 = dynamicEntry(derive_count(2), "segCountX2", derived=True)
+    searchRange: uint16 = dynamicEntry(derive_searchRange(2), "_segCount")
+    entrySelector: uint16 = dynamicEntry(derive_entrySelector(), "_segCount")
+    rangeShift: uint16 = dynamicEntry(derive_rangeShift(2), "_segCount", "searchRange")
+    endCode: Array[uint16] = arrayEntry("_segCount")
     reservePad: uint16
-    startCode: Array[uint16] = arrayEntry("segCount")
-    idDelta: Array[uint16] = arrayEntry("segCount")
-    idRangeOffset: Array[uint16] = arrayEntry("segCount")
+    startCode: Array[uint16] = arrayEntry("_segCount")
+    idDelta: Array[uint16] = arrayEntry("_segCount")
+    idRangeOffset: Array[uint16] = arrayEntry("_segCount")
     glyphIdArray: Array[uint16] = dynamicEntry(
-        derive_fmt4_glpyhIdArray, "segCount", "length"
+        derive_fmt4_glpyhIdArray, "_segCount", "length"
     )
 
 
