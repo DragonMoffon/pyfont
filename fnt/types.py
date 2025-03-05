@@ -5,7 +5,7 @@ from fnt.exceptions import (
     IllformedTTFTypeError,
     TableRedefinitionError,
 )
-from typing import Self, Protocol, TypeVar, TYPE_CHECKING
+from typing import Self, Protocol, Callable, TypeVar, TYPE_CHECKING
 from enum import StrEnum
 import dataclasses
 
@@ -51,7 +51,7 @@ class TTFType:
     sz: int = None  # Byte size equal to struct.calcsize(cls)
 
     @classmethod
-    def read(cls: Self, buffer: bytes, offset: int = 0, *, font: Font = None) -> Self:
+    def read(cls: Self, buffer: bytes, offset: int = 0) -> Self:
         """
         Return the TTF type extracted from the bytes at the offset in the buffer.
         By default this is bounded by the type's size, but the Table and Array
@@ -77,7 +77,10 @@ class TTFType:
             raise ValueError("Cannot byte {cls} as it is not fully formed")
         return cls(val.to_bytes(length=cls.sz, signed=signed))
 
+    def write(self) -> bytes: ...
 
+
+type TTFVersion = TTFType | tuple[TTFType, ...]
 TTF_T = TypeVar("TTF_T", bound=TTFType)
 
 
@@ -298,7 +301,7 @@ class raw(bytes, TTFType):
         return bytes.__new__(cls, b)
 
     @classmethod
-    def read(cls, buffer: bytes, offset: int = 0, *, font: Font = None) -> Self:
+    def read(cls, buffer: bytes, offset: int = 0) -> Self:
         if cls.sz is None:
             raise TypeError(f"{cls} must be given a size via []")
 
@@ -360,7 +363,7 @@ class Array(tuple, TTFType):
         return array
 
     @classmethod
-    def read(cls, buffer: bytes, offset: int = 0, *, font: Font = None) -> Self:
+    def read(cls, buffer: bytes, offset: int = 0) -> Self:
         if cls.__typ__ is None:
             raise IllformedTTFTypeError(cls)
 
@@ -476,21 +479,21 @@ class DynamicFunction(Protocol):
 
 class EntryType(StrEnum):
     STATIC = "static"
-    VERSION = "version"
     DYNAMIC = "dynamic"
     LINKED = "linked"
+    PROPERTY = "property"
 
 
 def staticEntry() -> dataclasses.Field:
-    return dataclasses.field(metadata={"entry": EntryType.STATIC})
+    return dataclasses.field(metadata={"entry": EntryType.STATIC, "version": False})
 
 
 def versionEntry() -> dataclasses.Field:
-    return dataclasses.field(metadata={"entry": EntryType.VERSION})
+    return dataclasses.field(metadata={"entry": EntryType.STATIC, "version": True})
 
 
 def dynamicEntry(
-    f: DynamicFunction, *srcs: str, derived: bool = False
+    f: DynamicFunction, *srcs: str, derived: bool = False, version: bool = False
 ) -> dataclasses.Field:
     return dataclasses.field(
         metadata={
@@ -502,7 +505,7 @@ def dynamicEntry(
     )
 
 
-def linkedEntry(table: str, entry: str) -> dataclasses.Field:
+def linkedEntry(table: str, entry: str, version: bool = False) -> dataclasses.Field:
     return dataclasses.field(
         metadata={
             "entry": EntryType.LINKED,
@@ -513,15 +516,21 @@ def linkedEntry(table: str, entry: str) -> dataclasses.Field:
     )
 
 
+def propertyEntry(prop: str = "length") -> dataclasses.Field:
+    return dataclasses.field(
+        metadata={"entry": EntryType.PROPERTY, "derived": True, "property": prop}
+    )
+
+
 def arrayEntry(src: str, *, derived: bool = False) -> dataclasses.Field:
     return dynamicEntry(_parse_semistatic_array, src, derived=derived)
 
 
 def _parse_static(
-    typ: type[TTF_T], buffer: bytes, offset: int = 0, sz: int = 0, *, file: File = None
+    typ: type[TTF_T], buffer: bytes, offset: int = 0, sz: int = 0
 ) -> TTF_T:
     # Avoid boilerplater for simplest dynamic case (static) and provide default
-    item = typ.read(buffer, offset + sz, font=file)
+    item = typ.read(buffer, offset + sz)
     if item.sz is None or item.fmt is None:
         raise ValueError(
             f"Failed to create {typ} from buffer {buffer} at {offset} + {sz}"
@@ -569,6 +578,13 @@ def _make_into_table(cls: type) -> type[Table]:
     )
 
 
+class TableRecord(Protocol):
+    tableTag: Tag
+    checksum: uint32
+    offset: Offset32
+    length: uint32
+
+
 class Definition(type):
     def __new__(cls, name, bases, dct):
         table = type.__new__(cls, name, bases, dct)
@@ -585,8 +601,11 @@ class Definition(type):
 
 class Table(TTFType, metaclass=Definition):
     __versions__: dict[TTFType, type[Table]] = None
+    __selectors__: tuple[
+        (TTFVersion, Callable[[TTFVersion, TTFVersion], bool, type[Table]])
+    ] = ()
 
-    def __class_getitem__(cls, version: TTFType | tuple[TTFType, ...]) -> type[Table]:
+    def __class_getitem__(cls, version: TTFVersion) -> type[Table]:
         if not isinstance(version, TTFType) and len(version) == 1:
             version = version[0]
 
@@ -594,6 +613,9 @@ class Table(TTFType, metaclass=Definition):
             raise TypeError("Cannot get a table version from a version")
 
         if version not in cls.__versions__:
+            for v, c, ver in cls.__selectors__:
+                if c(version, v):
+                    return ver
             # This will also fire for tables that have no versions defined, but that's
             # fine checking for an empty version dict here is redundant.
             raise ValueError(f"{version} has not been defined as a version of {cls}")
@@ -605,82 +627,128 @@ class Table(TTFType, metaclass=Definition):
         return getattr(self, entry)
 
     @classmethod
-    def read(cls: Self, buffer: bytes, offset: int = 0, *, font: Font = None) -> Self:
+    def find_version(cls: Self, buffer: bytes, offset: int = 0) -> type[Table]:
         # No versions were defined so use the default (initial definition)
         # Or this is a version so it won't have a defined version dictionary
-        if not cls.__versions__:
-            return cls._read(buffer, offset, font=font)
+        if not cls.__versions__ and not cls.__selectors__:
+            return cls
 
         # We need to get the version to delegate to the correct defintion
         # of the table. Which could be multiple fields so we have to find them
         # all and the offsets to read with.
-        shift = 0
+        obj = cls._read(buffer, offset)
         version = []
         for field in dataclasses.fields(cls):
-            entry = field.metadata.get("entry", "static")
-            typ = field.type
-
-            if entry == "version":
-                version.append(typ.read(buffer, offset + shift))
-            elif typ.sz is None or entry != "static":
-                raise TypeError(
-                    f"All records preceding the version entries of {cls} must be static"
-                )
-            shift += typ.sz
+            if field.metadata.get("version", False):
+                version.append(obj[field.name])
 
         if not version:
             # if no version values were parsed then the table definition is lacking
             # any version info, but has versions defined.
             raise MissingVersionFieldError(cls)
 
-        return cls[*version]._read(buffer, offset, font=font)
+        return cls[*version]
 
     @classmethod
-    def _read(cls: Self, buffer: bytes, offset: int, *, font: Font = None) -> Self:
-        # Many table formats have variable length arrays that make
-        # using struct.unpack difficult, but each type still has it fmt.
-        fields = dataclasses.fields(cls)
-        values: dict[str, TTFType] = {}
+    def parse(cls: Self, record: TableRecord, font: Font, buffer: btyes) -> Self:
+        entries: dict[str, TTFType] = {}
         fmt = ""  # Table's final struct fmt
         sz = 0  # Table's final byte size, Also used as the rolling offset
-        for field in fields:
-            typ = field.type  # Metamagic of dataclasses.Field stores the type
-            name = field.name  # Name of the Field from the dataclass def
-            entry = field.metadata.get("entry", EntryType.STATIC)
-            if (
-                entry == EntryType.STATIC or entry == EntryType.VERSION
-            ):  # This entry can be read as-is from the buffer
-                item = _parse_static(typ, buffer, offset + sz)
-                values[name] = item
-                sz += item.sz
-                fmt += item.fmt
-            elif entry == EntryType.DYNAMIC:
-                # This entry has to be modified/derived instead of the raw value
-                derived = field.metadata.get("derived", False)
-                srcs = field.metadata.get("srcs", ())
-                func = field.metadata.get("func", _parse_static)
-                item = func(*(values[src] for src in srcs), typ, buffer, offset, sz)
-                values[name] = item
-                if not derived:
-                    # If the entry was actually found in the table then we need to
-                    # offset the buffer, and add it to the format string.
-                    sz += item.sz
-                    fmt += item.fmt
-            elif entry == EntryType.LINKED:
-                item = font.get_table(field.metadata["table"])[field.metadata["source"]]
-                values[name] = item
-                # A Linked item is always derived and shouldn't be accounted for.
-            else:
-                raise InvalidFieldTypeError(entry)
+        offset = record.offset
 
-        obj = cls(*values.values())
+        cls = cls.find_version(buffer, record.offset)
+
+        for field in dataclasses.fields(cls):
+            typ = field.type
+            name = field.name
+            match field.metadata.get("entry", EntryType.STATIC):
+                case EntryType.STATIC:
+                    # This entry can be read as-is from the buffer
+                    value = _parse_static(typ, buffer, offset + sz)
+                    entries[name] = value
+                    sz += value.sz
+                    fmt += value.fmt
+                case EntryType.DYNAMIC:
+                    # This entry has to be modified/derived instead of the raw value
+                    derived = field.metadata.get("derived", False)
+                    func = field.metadata.get("func", _parse_static)
+                    values = (entries[src] for src in field.metadata.get("srcs", ()))
+                    value = func(*values, typ, buffer, offset, sz)
+                    entries[name] = value
+                    if not derived:
+                        # If the entry was actually found in the table then we need to
+                        # offset the buffer, and add it to the format string.
+                        sz += value.sz
+                        fmt += value.fmt
+                case EntryType.LINKED:
+                    # this entry comes from another table rather than the buffer
+                    source = field.metadata["source"]
+                    table = font.get_table(field.metadata["table"])
+                    entries[name] = table[source]
+                case EntryType.PROPERTY:
+                    # this entry comes from the table record or font.
+                    prop = field.metadata.get("property", "length")
+                    value = uint32.byte(0)
+                    if prop == "length":
+                        value = record.length
+                    entries[name] = value
+                case entry:
+                    raise InvalidFieldTypeError(entry)
+
+        obj = cls(**entries)
         obj.fmt = fmt
         obj.sz = sz
 
         return obj
 
     @classmethod
-    def add_version(cls: Self, v: TTFType | tuple[TTFType, ...]) -> Self:
+    def read(cls: Self, buffer: bytes, offset: int = 0) -> Self:
+        cls = cls.find_version(buffer, offset)
+        return cls._read(buffer, offset)
+
+    @classmethod
+    def _read(cls: Self, buffer, offset: int = 0) -> Self:
+        entries: dict[str, TTFType] = {}
+        fmt = ""  # Table's final struct fmt
+        sz = 0  # Table's final byte size, Also used as the rolling offset
+
+        for field in dataclasses.fields(cls):
+            typ = field.type  # Metamagic of dataclasses.Field stores the type
+            name = field.name  # Name of the Field from the dataclass def
+            match field.metadata.get("entry", EntryType.STATIC):
+                case EntryType.STATIC:
+                    # This entry can be read as-is from the buffer
+                    item = _parse_static(typ, buffer, offset + sz)
+                    entries[name] = item
+                    sz += item.sz
+                    fmt += item.fmt
+                case EntryType.DYNAMIC:
+                    # This entry has to be modified/derived instead of the raw value
+                    derived = field.metadata.get("derived", False)
+                    srcs = (entries[src] for src in field.metadata.get("srcs", ()))
+                    func = field.metadata.get("func", _parse_static)
+                    item = func(*srcs, typ, buffer, offset, sz)
+                    entries[name] = item
+                    if not derived:
+                        # If the entry was actually found in the table then we need to
+                        # offset the buffer, and add it to the format string.
+                        sz += item.sz
+                        fmt += item.fmt
+                case entry:
+                    raise InvalidFieldTypeError(entry)
+
+        obj = cls(**entries)
+        obj.fmt = fmt
+        obj.sz = sz
+
+        return obj
+
+    @classmethod
+    def add_version(
+        cls: Self,
+        v: TTFVersion,
+        c: Callable[[TTFVersion, TTFVersion], bool] | None = None,
+    ) -> Self:
         if not isinstance(v, TTFType | tuple):
             raise ValueError(f"{v} is not a ttf type and cannot be used for versioning")
         if cls.__versions__ is None:
@@ -694,7 +762,10 @@ class Table(TTFType, metaclass=Definition):
             # Update the version to be a Table, and a dataclass
             subcls = _make_into_table(subcls)
             subcls.__versions__ = None
-            cls.__versions__[v] = subcls
+            if c is None:
+                cls.__versions__[v] = subcls
+            else:
+                cls.__selectors__ = (*cls.__selectors__, (v, c, subcls))
 
             # Helps with typing when needed
             if subcls.__name__ != cls.__name__:

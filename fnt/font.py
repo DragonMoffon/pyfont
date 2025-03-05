@@ -34,7 +34,7 @@ class FileFont(Font):
         union = set((*self._name_mapping.keys(), *self._tables.keys()))
         return tuple(sorted(union))
 
-    def get_table[TableType: Table](self, name: str) -> TableType | None:
+    def get_table(self, name: str) -> Table | None:
         if name not in TABLES:
             print(f"{name} is not a valid TTF or OTF table")
             return None
@@ -47,9 +47,9 @@ class FileFont(Font):
             return None
 
         record = self._name_mapping[name]
-        typ: type[TableType] = TABLES[name]
+        typ: type[Table] = TABLES[name]
 
-        table = typ.read(self._data, record.offset, font=self)
+        table = typ.parse(record, self, self._data)
 
         return table
 
