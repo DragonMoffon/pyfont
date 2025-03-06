@@ -35,6 +35,9 @@ class PascalString(Table):
     length: uint8
     chars: Array[uint8] = arrayEntry("length")
 
+    def __str__(self):
+        return f"PascalString[{self.length}]({"".join(chr(c) for c in self.chars)})"
+
 
 def derive_ver2_strings(
     indices: Array[uint16], typ, buffer: bytes, offset: int, sz: int
