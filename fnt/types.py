@@ -394,7 +394,9 @@ class Array(tuple, TTFType):
 
         return cls(buffer[offset:])
 
-    def __class_getitem__(cls: Self, inp: type[TTFType] | int | tuple[TTFType, int]):
+    def __class_getitem__(
+        cls: Self, inp: type[TTFType] | int | tuple[TTFType, int]
+    ) -> type[Array]:
         """
         To follow the convention set by the other TTF types and to reduce the
         teeny tiny boiler-plate Array delves into types metamagic to store

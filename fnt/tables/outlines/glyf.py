@@ -10,8 +10,9 @@ from fnt.types import (
     uint8,
     int16,
     uint16,
+    F2DOT14,
 )
-from fnt.flags import SimpleGlyphFlags
+from fnt.flags import SimpleGlyphFlags, CompositeGlyphFlags
 
 
 class Glyph(Table):
@@ -116,13 +117,200 @@ class SimpleGlyphHeader(Table):
     yCoordinates: Array[uint8] = dynamicEntry(parse_y_array, "pointLength")
 
 
-@Glyph.add_version(int16.byte(-1, signed=True), lambda a, b: a < b)
+class CompositeGlyphDescription(Table):
+    flags: uint16 = versionEntry()
+
+
+def contains(a, b):
+    return (a & b) == b
+
+
+s16 = CompositeGlyphFlags.ARG_1_AND_2_ARE_WORDS | CompositeGlyphFlags.ARGS_ARE_XY_VALUES
+us16 = CompositeGlyphFlags.ARG_1_AND_2_ARE_WORDS
+s8 = CompositeGlyphFlags.ARGS_ARE_XY_VALUES
+us8 = uint16.byte(0x0000)
+
+
+@CompositeGlyphDescription.add_version(
+    s16 | CompositeGlyphFlags.WE_HAVE_A_SCALE, contains
+)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: int16
+    yOffset: int16
+    scale: F2DOT14
+
+
+@CompositeGlyphDescription.add_version(
+    us16 | CompositeGlyphFlags.WE_HAVE_A_SCALE, contains
+)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: uint16
+    yOffset: uint16
+    scale: F2DOT14
+
+
+@CompositeGlyphDescription.add_version(
+    s8 | CompositeGlyphFlags.WE_HAVE_A_SCALE, contains
+)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: int8
+    yOffset: int8
+    scale: F2DOT14
+
+
+@CompositeGlyphFlags.add_version(us8 | CompositeGlyphFlags.WE_HAVE_A_SCALE, contains)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: uint8
+    yOffset: uint8
+    scale: F2DOT14
+
+
+@CompositeGlyphDescription.add_version(
+    s16 | CompositeGlyphFlags.WE_HAVE_AN_X_AND_Y_SCALE, contains
+)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: int16
+    yOffset: int16
+    xScale: F2DOT14
+    yScale: F2DOT14
+
+
+@CompositeGlyphDescription.add_version(
+    us16 | CompositeGlyphFlags.WE_HAVE_AN_X_AND_Y_SCALE, contains
+)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: uint16
+    yOffset: uint16
+    xScale: F2DOT14
+    yScale: F2DOT14
+
+
+@CompositeGlyphDescription.add_version(
+    s8 | CompositeGlyphFlags.WE_HAVE_AN_X_AND_Y_SCALE, contains
+)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: int8
+    yOffset: int8
+    xScale: F2DOT14
+    yScale: F2DOT14
+
+
+@CompositeGlyphFlags.add_version(
+    us8 | CompositeGlyphFlags.WE_HAVE_AN_X_AND_Y_SCALE, contains
+)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: uint8
+    yOffset: uint8
+    xScale: F2DOT14
+    yScale: F2DOT14
+
+
+@CompositeGlyphDescription.add_version(
+    s16 | CompositeGlyphFlags.WE_HAVE_A_TWO_BY_TWO, contains
+)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: int16
+    yOffset: int16
+    xScale: F2DOT14
+    scale01: F2DOT14
+    scale10: F2DOT14
+    yScale: F2DOT14
+
+
+@CompositeGlyphDescription.add_version(
+    us16 | CompositeGlyphFlags.WE_HAVE_A_TWO_BY_TWO, contains
+)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: uint16
+    yOffset: uint16
+    xScale: F2DOT14
+    scale01: F2DOT14
+    scale10: F2DOT14
+    yScale: F2DOT14
+
+
+@CompositeGlyphDescription.add_version(
+    s8 | CompositeGlyphFlags.WE_HAVE_A_TWO_BY_TWO, contains
+)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: int8
+    yOffset: int8
+    xScale: F2DOT14
+    scale01: F2DOT14
+    scale10: F2DOT14
+    yScale: F2DOT14
+
+
+@CompositeGlyphFlags.add_version(
+    us8 | CompositeGlyphFlags.WE_HAVE_A_TWO_BY_TWO, contains
+)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: uint8
+    yOffset: uint8
+    xScale: F2DOT14
+    scale01: F2DOT14
+    scale10: F2DOT14
+    yScale: F2DOT14
+
+
+def parse_glyph_descriptions(
+    typ: Array[CompositeGlyphDescription], buffer: bytes, offset: int = 0, sz: int = 0
+):
+    obj = CompositeGlyphDescription.read(buffer, offset + sz)
+    sz += obj.sz
+    children = [obj]
+    while obj.flags & CompositeGlyphFlags.MORE_COMPONENTS:
+        obj = CompositeGlyphDescription.read(buffer, offset + sz)
+
+    return typ[len(children)].force(*children)
+
+
+def parse_instruction_length(
+    children: Array[CompositeGlyphDescription],
+    typ: type[uint16],
+    buffer: bytes,
+    offset: int = 0,
+    sz: int = 0,
+):
+    if children and children[-1].flags & CompositeGlyphFlags.WE_HAVE_INSTRUCTIONS:
+        return typ.read(buffer, offset + sz)
+    return typ.byte(0x00)
+
+
+@Glyph.add_version(int16.byte(0, signed=True), lambda a, b: a < b)
 class CompositeGlyph(Table):
     numberOfContours: int16
     xMin: int16
     xMax: int16
     yMin: int16
     yMax: int16
+    children: Array[CompositeGlyphDescription] = dynamicEntry(parse_glyph_descriptions)
+    instructionLength: uint16 = dynamicEntry(parse_instruction_length, "children")
+    instructions: Array[uint8] = arrayEntry("instructionLength")
 
 
 def parse_glyphs(

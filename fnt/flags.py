@@ -134,6 +134,22 @@ class SimpleGlyphFlags:
     Reserved = uint8.byte(0x80)
 
 
+class CompositeGlyphFlags:
+    ARG_1_AND_2_ARE_WORDS = uint16.byte(0x0001)
+    ARGS_ARE_XY_VALUES = uint16.byte(0x0002)
+    ROUND_XY_TO_GRID = uint16.byte(0x0004)
+    WE_HAVE_A_SCALE = uint16.byte(0x0008)
+    MORE_COMPONENTS = uint16.byte(0x0020)
+    WE_HAVE_AN_X_AND_Y_SCALE = uint16.byte(0x0040)
+    WE_HAVE_A_TWO_BY_TWO = uint16.byte(0x0080)
+    WE_HAVE_INSTRUCTIONS = uint16.byte(0x0100)
+    USE_MY_METRICS = uint16.byte(0x0200)
+    OVERLAP_COMPOUND = uint16.byte(0x0400)
+    SCALED_COMPONENT_OFFSET = uint16.byte(0x0800)
+    UNSCALED_COMPONENT_OFFSET = uint16.byte(0x1000)
+    Reserved = uint16.byte(0xE010)
+
+
 class GaspFlags:
     GASP_GRIDFIT = uint16.byte(0x0001)
     GASP_DOGRAY = uint16.byte(0x0002)
