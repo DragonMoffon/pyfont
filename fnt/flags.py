@@ -2,88 +2,94 @@
 defintiions of all Flags and Enums found in tables
 """
 
-from fnt.types import uint8, uint16, int16, uint32
+from fnt.types import (
+    uint8,
+    uint16,
+    int16,
+    uint32,
+    uint32_from_bytes,
+)
 
 
 class sfntVersion:
-    TRUE: uint32 = uint32(b"true")  # iOS and OS X only
-    V1: uint32 = uint32(b"\x00\x01\x00\x00")
-    TYP1: uint32 = uint32(b"typ1")  # iOS and OS X only
-    OTTO: uint32 = uint32(b"OTTO")
+    TRUE: uint32 = uint32_from_bytes(b"true")  # iOS and OS X only
+    V1: uint32 = uint32_from_bytes(b"\x00\x01\x00\x00")
+    TYP1: uint32 = uint32_from_bytes(b"typ1")  # iOS and OS X only
+    OTTO: uint32 = uint32_from_bytes(b"OTTO")
 
 
 class Platform:
-    UNICODE = uint16(b"\x00\x00")
-    MACINTOSH = uint16(b"\x00\x01")
-    ISO = uint16(b"\x00\x02")  # deprecated
-    WINDOWS = uint16(b"\x00\x03")
-    CUSTOM = uint16(b"\x00\x04")
+    UNICODE: uint16 = 0
+    MACINTOSH: uint16 = 1
+    ISO: uint16 = 2  # deprecated
+    WINDOWS: uint16 = 3
+    CUSTOM: uint16 = 4
 
 
 class UnicodeEncoding:
-    UNICODE10 = uint16(b"\x00\x00")  # V 1.0 - deprecated
-    UNICODE11 = uint16(b"\x00\x01")  # V 1.1 - deprecated
-    ISO_IEC = uint16(b"\x00\x02")  # 10646 - deprecated
-    UNICODE2_BMP = uint16(b"\x00\x03")  # Unicode BMP only
-    UNICODE2_FULL = uint16(b"\x00\x04")  # Unicode Full Repitore
-    UNICODE_VAR = uint16(b"\x00\x05")  # Variation Sequences - For format 14
-    UNICODE_FULL = uint16(b"\x00\x06")  # Full repitore - For format 13
+    UNICODE10: uint16 = 0  # V 1.0 - deprecated
+    UNICODE11: uint16 = 1  # V 1.1 - deprecated
+    ISO_IEC: uint16 = 2  # 10646 - deprecated
+    UNICODE2_BMP: uint16 = 3  # Unicode BMP only
+    UNICODE2_FULL: uint16 = 4  # Unicode Full Repitore
+    UNICODE_VAR: uint16 = 5  # Variation Sequences - For format 14
+    UNICODE_FULL: uint16 = 6  # Full repitore - For format 13
 
 
 class MacintoshEncoding:
-    ROMAN = uint16(b"\x00\x00")
-    JAPANESE = uint16(b"\x00\x01")
-    CHINESE_TRADITIONAL = uint16(b"\x00\x02")
-    KOREAN = uint16(b"\x00\x03")
-    ARABIC = uint16(b"\x00\x04")
-    HEBREW = uint16(b"\x00\x05")
-    GREEK = uint16(b"\x00\x06")
-    RUSSIAN = uint16(b"\x00\x07")
-    RSYMBOL = uint16(b"\x00\x08")
-    DEVANAGARI = uint16(b"\x00\x09")
-    GURMUKHI = uint16(b"\x00\x0A")
-    GUJARATI = uint16(b"\x00\x0B")
-    ODIA = uint16(b"\x00\x0C")
-    BANGLA = uint16(b"\x00\x0D")
-    TAMIL = uint16(b"\x00\x0E")
-    TELUGU = uint16(b"\x00\x0F")
-    KANNADA = uint16(b"\x00\x10")
-    MALAYALAM = uint16(b"\x00\x11")
-    SINHALESE = uint16(b"\x00\x12")
-    BURMESE = uint16(b"\x00\x13")
-    KHMER = uint16(b"\x00\x14")
-    THAI = uint16(b"\x00\x15")
-    LAOTIAN = uint16(b"\x00\x16")
-    GEORGIAN = uint16(b"\x00\x17")
-    ARMENIAN = uint16(b"\x00\x18")
-    CHINESE_SIMPLIFIED = uint16(b"\x00\x19")
-    TIBETAN = uint16(b"\x00\x1A")
-    MONGOLIAN = uint16(b"\x00\x1B")
-    GEEZ = uint16(b"\x00\x1C")
-    SLAVIC = uint16(b"\x00\x1D")
-    VIETNAMESE = uint16(b"\x00\x1E")
-    SINDHI = uint16(b"\x00\x1F")
-    UNINTERPRETED = uint16(b"\x00\x20")
+    ROMAN: uint16 = 0
+    JAPANESE: uint16 = 1
+    CHINESE_TRADITIONAL: uint16 = 2
+    KOREAN: uint16 = 3
+    ARABIC: uint16 = 4
+    HEBREW: uint16 = 5
+    GREEK: uint16 = 6
+    RUSSIAN: uint16 = 7
+    RSYMBOL: uint16 = 8
+    DEVANAGARI: uint16 = 9
+    GURMUKHI: uint16 = 10
+    GUJARATI: uint16 = 11
+    ODIA: uint16 = 12
+    BANGLA: uint16 = 13
+    TAMIL: uint16 = 14
+    TELUGU: uint16 = 15
+    KANNADA: uint16 = 16
+    MALAYALAM: uint16 = 17
+    SINHALESE: uint16 = 18
+    BURMESE: uint16 = 19
+    KHMER: uint16 = 20
+    THAI: uint16 = 21
+    LAOTIAN: uint16 = 22
+    GEORGIAN: uint16 = 23
+    ARMENIAN: uint16 = 24
+    CHINESE_SIMPLIFIED: uint16 = 25
+    TIBETAN: uint16 = 26
+    MONGOLIAN: uint16 = 27
+    GEEZ: uint16 = 28
+    SLAVIC: uint16 = 29
+    VIETNAMESE: uint16 = 30
+    SINDHI: uint16 = 31
+    UNINTERPRETED: uint16 = 32
 
 
 class ISOEncoding:
-    ASCII = uint16(b"\x00\x00")  # 7-bit ASCII
-    ISO_10646 = uint16(b"\x00\x01")  # ISO 10646
-    ISO_8859_1 = uint16(b"\x00\x02")  # ISO 8859-1
+    ASCII: uint16 = 0  # 7-bit ASCII
+    ISO_10646: uint16 = 1  # ISO 10646
+    ISO_8859_1: uint16 = 2  # ISO 8859-1
 
 
 class WindowsEncoding:
-    SYMBOL = uint16(b"\x00\x00")
-    UNICODE_BMP = uint16(b"\x00\x00")
-    SHIFTJIS = uint16(b"\x00\x00")
-    PRC = uint16(b"\x00\x00")
-    BIG5 = uint16(b"\x00\x00")
-    WANSUNG = uint16(b"\x00\x00")
-    JOHAB = uint16(b"\x00\x00")
-    RESERVED0 = uint16(b"\x00\x00")
-    RESERVED1 = uint16(b"\x00\x00")
-    RESERVED2 = uint16(b"\x00\x00")
-    UNICODE_FULL = uint16(b"\x00\x00")
+    SYMBOL: uint16 = 0
+    UNICODE_BMP: uint16 = 0
+    SHIFTJIS: uint16 = 0
+    PRC: uint16 = 0
+    BIG5: uint16 = 0
+    WANSUNG: uint16 = 0
+    JOHAB: uint16 = 0
+    RESERVED0: uint16 = 0
+    RESERVED1: uint16 = 0
+    RESERVED2: uint16 = 0
+    UNICODE_FULL: uint16 = 0
 
 
 # Custom supports any from 0-255 see:
@@ -116,43 +122,43 @@ class macStyle:
 
 
 class fontDirectionHint:
-    MIXED = int16.byte(0)
-    LEFT_TO_RIGHT = int16.byte(1, signed=True)
-    LEFT_TO_RIGHT_NEUTRALS = int16.byte(2)
-    RIGHT_TO_LEFT = int16.byte(-1, signed=True)
-    RIGHT_TO_LEFT_NEUTRALS = int16.byte(-2, signed=True)
+    MIXED: int16 = 0
+    LEFT_TO_RIGHT: int16 = 1
+    LEFT_TO_RIGHT_NEUTRALS: int16 = 2
+    RIGHT_TO_LEFT: int16 = -1
+    RIGHT_TO_LEFT_NEUTRALS: int16 = -2
 
 
 class SimpleGlyphFlags:
-    ON_CURVE_POINT = uint8.byte(0x01)
-    X_SHORT_VECTOR = uint8.byte(0x02)
-    Y_SHORT_VECTOR = uint8.byte(0x04)
-    REPEAT_FLAG = uint8.byte(0x08)
-    X_IS_SAME_OR_POSITIVE_X_SHORT_VECTOR = uint8.byte(0x10)
-    Y_IS_SAME_OR_POSITIVE_Y_SHORT_VECTOR = uint8.byte(0x20)
-    OVERLAP_SIMPLE = uint8.byte(0x40)
-    Reserved = uint8.byte(0x80)
+    ON_CURVE_POINT: uint8 = 0x01
+    X_SHORT_VECTOR: uint8 = 0x02
+    Y_SHORT_VECTOR: uint8 = 0x04
+    REPEAT_FLAG: uint8 = 0x08
+    X_IS_SAME_OR_POSITIVE_X_SHORT_VECTOR: uint8 = 0x10
+    Y_IS_SAME_OR_POSITIVE_Y_SHORT_VECTOR: uint8 = 0x20
+    OVERLAP_SIMPLE: uint8 = 0x40
+    Reserved: uint8 = 0x80
 
 
 class CompositeGlyphFlags:
-    ARG_1_AND_2_ARE_WORDS = uint16.byte(0x0001)
-    ARGS_ARE_XY_VALUES = uint16.byte(0x0002)
-    ROUND_XY_TO_GRID = uint16.byte(0x0004)
-    WE_HAVE_A_SCALE = uint16.byte(0x0008)
-    MORE_COMPONENTS = uint16.byte(0x0020)
-    WE_HAVE_AN_X_AND_Y_SCALE = uint16.byte(0x0040)
-    WE_HAVE_A_TWO_BY_TWO = uint16.byte(0x0080)
-    WE_HAVE_INSTRUCTIONS = uint16.byte(0x0100)
-    USE_MY_METRICS = uint16.byte(0x0200)
-    OVERLAP_COMPOUND = uint16.byte(0x0400)
-    SCALED_COMPONENT_OFFSET = uint16.byte(0x0800)
-    UNSCALED_COMPONENT_OFFSET = uint16.byte(0x1000)
-    Reserved = uint16.byte(0xE010)
+    ARG_1_AND_2_ARE_WORDS: uint16 = 0x0001
+    ARGS_ARE_XY_VALUES: uint16 = 0x0002
+    ROUND_XY_TO_GRID: uint16 = 0x0004
+    WE_HAVE_A_SCALE: uint16 = 0x0008
+    MORE_COMPONENTS: uint16 = 0x0020
+    WE_HAVE_AN_X_AND_Y_SCALE: uint16 = 0x0040
+    WE_HAVE_A_TWO_BY_TWO: uint16 = 0x0080
+    WE_HAVE_INSTRUCTIONS: uint16 = 0x0100
+    USE_MY_METRICS: uint16 = 0x0200
+    OVERLAP_COMPOUND: uint16 = 0x0400
+    SCALED_COMPONENT_OFFSET: uint16 = 0x0800
+    UNSCALED_COMPONENT_OFFSET: uint16 = 0x1000
+    Reserved: uint16 = 0xE010
 
 
 class GaspFlags:
-    GASP_GRIDFIT = uint16.byte(0x0001)
-    GASP_DOGRAY = uint16.byte(0x0002)
-    GASP_SYMMETRIC_GRIDFIT = uint16.byte(0x0004)
-    GASP_SYMMETRIC_SMOOTHING = uint16.byte(0x0008)
-    Reserved = uint16.byte(0xFFF0)
+    GASP_GRIDFIT: uint16 = 0x0001
+    GASP_DOGRAY: uint16 = 0x0002
+    GASP_SYMMETRIC_GRIDFIT: uint16 = 0x0004
+    GASP_SYMMETRIC_SMOOTHING: uint16 = 0x0008
+    Reserved: uint16 = 0xFFF0

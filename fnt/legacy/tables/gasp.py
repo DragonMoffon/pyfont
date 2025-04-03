@@ -1,5 +1,4 @@
 from fnt.types import Table, arrayEntry, Array, uint16
-from fnt.flags import GaspFlags
 
 
 class GaspRange(Table):

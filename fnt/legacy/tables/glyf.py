@@ -1,5 +1,4 @@
-from typing import Self
-from fnt.types import (
+from fnt.legacy.types import (
     Table,
     linkedEntry,
     versionEntry,
@@ -29,21 +28,15 @@ def derive_array_sizes(
     if len(endPtsOfContours) == 0:
         return Array[uint16, 3](b"\00\00\00\00\00\00")
 
-    _repeat = 0
-
     _x_size = 0
     _y_size = 0
     _f_size = 0
 
     for point in range(endPtsOfContours[-1] + 1):
-        if _repeat > 0:
-            _repeat -= 1
-            continue
-
         flag = uint8.read(buffer, offset + sz + _f_size)
 
         # When the short flag is triggered the
-        # coordniate is always an uint8
+        # coordniate is always an int8
         # when the sign flag is triggered then
         # the coordinate is copied and so isn't included
         # when neither is triggered then its an int16
@@ -132,7 +125,7 @@ us8 = uint16.byte(0x0000)
 
 
 @CompositeGlyphDescription.add_version(
-    s16 | CompositeGlyphFlags.WE_HAVE_A_SCALE, contains
+    uint16.byte(s16 | CompositeGlyphFlags.WE_HAVE_A_SCALE), contains
 )
 class CompositeGlyphDescription:
     flags: uint16
@@ -143,7 +136,7 @@ class CompositeGlyphDescription:
 
 
 @CompositeGlyphDescription.add_version(
-    us16 | CompositeGlyphFlags.WE_HAVE_A_SCALE, contains
+    uint16.byte(us16 | CompositeGlyphFlags.WE_HAVE_A_SCALE), contains
 )
 class CompositeGlyphDescription:
     flags: uint16
@@ -154,7 +147,7 @@ class CompositeGlyphDescription:
 
 
 @CompositeGlyphDescription.add_version(
-    s8 | CompositeGlyphFlags.WE_HAVE_A_SCALE, contains
+    uint16.byte(s8 | CompositeGlyphFlags.WE_HAVE_A_SCALE), contains
 )
 class CompositeGlyphDescription:
     flags: uint16
@@ -164,7 +157,9 @@ class CompositeGlyphDescription:
     scale: F2DOT14
 
 
-@CompositeGlyphFlags.add_version(us8 | CompositeGlyphFlags.WE_HAVE_A_SCALE, contains)
+@CompositeGlyphDescription.add_version(
+    uint16.byte(us8 | CompositeGlyphFlags.WE_HAVE_A_SCALE), contains
+)
 class CompositeGlyphDescription:
     flags: uint16
     glyphIndex: uint16
@@ -174,7 +169,7 @@ class CompositeGlyphDescription:
 
 
 @CompositeGlyphDescription.add_version(
-    s16 | CompositeGlyphFlags.WE_HAVE_AN_X_AND_Y_SCALE, contains
+    uint16.byte(s16 | CompositeGlyphFlags.WE_HAVE_AN_X_AND_Y_SCALE), contains
 )
 class CompositeGlyphDescription:
     flags: uint16
@@ -186,7 +181,7 @@ class CompositeGlyphDescription:
 
 
 @CompositeGlyphDescription.add_version(
-    us16 | CompositeGlyphFlags.WE_HAVE_AN_X_AND_Y_SCALE, contains
+    uint16.byte(us16 | CompositeGlyphFlags.WE_HAVE_AN_X_AND_Y_SCALE), contains
 )
 class CompositeGlyphDescription:
     flags: uint16
@@ -198,7 +193,7 @@ class CompositeGlyphDescription:
 
 
 @CompositeGlyphDescription.add_version(
-    s8 | CompositeGlyphFlags.WE_HAVE_AN_X_AND_Y_SCALE, contains
+    uint16.byte(s8 | CompositeGlyphFlags.WE_HAVE_AN_X_AND_Y_SCALE), contains
 )
 class CompositeGlyphDescription:
     flags: uint16
@@ -209,8 +204,8 @@ class CompositeGlyphDescription:
     yScale: F2DOT14
 
 
-@CompositeGlyphFlags.add_version(
-    us8 | CompositeGlyphFlags.WE_HAVE_AN_X_AND_Y_SCALE, contains
+@CompositeGlyphDescription.add_version(
+    uint16.byte(us8 | CompositeGlyphFlags.WE_HAVE_AN_X_AND_Y_SCALE), contains
 )
 class CompositeGlyphDescription:
     flags: uint16
@@ -222,7 +217,7 @@ class CompositeGlyphDescription:
 
 
 @CompositeGlyphDescription.add_version(
-    s16 | CompositeGlyphFlags.WE_HAVE_A_TWO_BY_TWO, contains
+    uint16.byte(s16 | CompositeGlyphFlags.WE_HAVE_A_TWO_BY_TWO), contains
 )
 class CompositeGlyphDescription:
     flags: uint16
@@ -236,7 +231,7 @@ class CompositeGlyphDescription:
 
 
 @CompositeGlyphDescription.add_version(
-    us16 | CompositeGlyphFlags.WE_HAVE_A_TWO_BY_TWO, contains
+    uint16.byte(us16 | CompositeGlyphFlags.WE_HAVE_A_TWO_BY_TWO), contains
 )
 class CompositeGlyphDescription:
     flags: uint16
@@ -250,7 +245,7 @@ class CompositeGlyphDescription:
 
 
 @CompositeGlyphDescription.add_version(
-    s8 | CompositeGlyphFlags.WE_HAVE_A_TWO_BY_TWO, contains
+    uint16.byte(s8 | CompositeGlyphFlags.WE_HAVE_A_TWO_BY_TWO), contains
 )
 class CompositeGlyphDescription:
     flags: uint16
@@ -263,9 +258,57 @@ class CompositeGlyphDescription:
     yScale: F2DOT14
 
 
-@CompositeGlyphFlags.add_version(
-    us8 | CompositeGlyphFlags.WE_HAVE_A_TWO_BY_TWO, contains
+@CompositeGlyphDescription.add_version(
+    uint16.byte(us8 | CompositeGlyphFlags.WE_HAVE_A_TWO_BY_TWO), contains
 )
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: uint8
+    yOffset: uint8
+    xScale: F2DOT14
+    scale01: F2DOT14
+    scale10: F2DOT14
+    yScale: F2DOT14
+
+
+@CompositeGlyphDescription.add_version(uint16.byte(s16), contains)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: int16
+    yOffset: int16
+    xScale: F2DOT14
+    scale01: F2DOT14
+    scale10: F2DOT14
+    yScale: F2DOT14
+
+
+@CompositeGlyphDescription.add_version(uint16.byte(us16), contains)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: uint16
+    yOffset: uint16
+    xScale: F2DOT14
+    scale01: F2DOT14
+    scale10: F2DOT14
+    yScale: F2DOT14
+
+
+@CompositeGlyphDescription.add_version(uint16.byte(s8), contains)
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: int8
+    yOffset: int8
+    xScale: F2DOT14
+    scale01: F2DOT14
+    scale10: F2DOT14
+    yScale: F2DOT14
+
+
+@CompositeGlyphDescription.add_version(uint16.byte(us8), contains)
 class CompositeGlyphDescription:
     flags: uint16
     glyphIndex: uint16
@@ -285,6 +328,7 @@ def parse_glyph_descriptions(
     children = [obj]
     while obj.flags & CompositeGlyphFlags.MORE_COMPONENTS:
         obj = CompositeGlyphDescription.read(buffer, offset + sz)
+        sz += obj.sz
 
     return typ[len(children)].force(*children)
 

@@ -42,6 +42,3 @@ class name:
     nameRecord: Array[NameRecord] = arrayEntry("count")
     langTagCount: uint16
     langTagRecord: Array[LangTagRecord] = arrayEntry("langTagCount")
-
-
-# TODO: provide name string reading method

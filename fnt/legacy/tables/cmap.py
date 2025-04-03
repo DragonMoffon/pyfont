@@ -27,7 +27,7 @@ from fnt.dynamic import (
     derive_rangeShift,
 )
 
-__all__ = ("EncodingRecord", "cmapHeader", "cmapSubtable", "cmapSub")
+__all__ = ("cmap", "cmapSubtable", "cmapHeader")
 
 
 class EncodingRecord(Table):
