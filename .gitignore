@@ -15,6 +15,7 @@ __pycache__/
 
 # Visual Studio Code
 *.code-workspace
+.vscode/
 
 # Pycharm
 .idea/
