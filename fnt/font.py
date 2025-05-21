@@ -179,12 +179,9 @@ type ParseMethod = Callable[[Font, TableRecord], Table]
 # Table Property
 class TableRef[T: Table]:
     # Generic override of table name for tables like OS/2
-    def __init__(self, name: str = ""):
-        self._name: str = name or ""
-
-    def __set_name__(self, owner: Font, name: str):
-        if self._name == "":
-            self._name = name
+    def __init__(self, typ: type[T], name: str = ""):
+        self._typ: type[T] = typ
+        self._name: str = name or typ.__name__
 
     def __get__(self, obj: Font | None, objtype: None) -> T | None:
         if obj is None or not obj.has_table(self._name):
