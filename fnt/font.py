@@ -1,3 +1,5 @@
+from typing import Callable
+
 from .tables import Table, TableRecord
 from .types import (
     uint8,
@@ -28,6 +30,8 @@ from .types import (
     version16dot16_from_bytes,
 )
 
+__all__ = ("Font", "ParseMethod", "TableRef")
+
 
 # Abstract
 class Font:
@@ -53,6 +57,9 @@ class Font:
         raise NotImplementedError()
 
     def read(self, sz: int) -> bytes:
+        raise NotImplementedError()
+
+    def pointer(self) -> int:
         raise NotImplementedError()
 
     # -- FILE READ METHODS --
@@ -164,3 +171,25 @@ class Font:
     get_offset32_array = get_uint32_array
     get_UFWORD_array = get_uint16_array
     get_FWORD_array = get_int16_array
+
+
+type ParseMethod = Callable[[Font, TableRecord], Table]
+
+
+# Table Property
+class TableRef[T: Table]:
+    # Generic override of table name for OS/2
+    def __init__(self, name: str = ""):
+        self._name: str = name or ""
+
+    def __set_name__(self, owner: Font, name: str):
+        if self._name == "":
+            self._name = name
+
+    def __get__(self, obj: Font | None, objtype: None) -> T | None:
+        if obj is None or not obj.has_table(self._name):
+            return None
+        return obj.get_table(self._name)
+
+    def __set__(self, obj: Font | None, value: None):
+        raise TypeError("cannot set the value of a font table.")

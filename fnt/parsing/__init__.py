@@ -1,10 +1,7 @@
-from typing import Callable
-
 from math import log2, floor
 
-from fnt.font import Font
+from fnt.font import Font, ParseMethod
 from fnt.tables import (
-    Table,
     TableRecord,
     TableDirectory,
     cmap,
@@ -12,6 +9,7 @@ from fnt.tables import (
     EncodingRecord,
     cmapSubtable,
     cmapSubtable_v0,
+    cmapSubHeader,
     cmapSubtable_v2,
     cmapSubtable_v4,
     cmapSubtable_v6,
@@ -44,8 +42,6 @@ from fnt.tables import (
 )
 from fnt.flags import Platform, WindowsEncoding, MacintoshEncoding
 
-type ParseMethod = Callable[[Font, TableRecord], Table]
-
 
 def parse_table_record(font: Font) -> TableRecord:
     return TableRecord(
@@ -76,7 +72,74 @@ def parse_cmap_subtable(
 ) -> cmapSubtable:
     font.seek(record.offset + encoding.subtableOffset)
     fmt = font.get_uint16()
-    print(fmt)
+    match fmt:
+        case 0:
+            return cmapSubtable_v0(
+                fmt,
+                font.get_uint16(),
+                font.get_uint16(),
+                font.get_uint8_array(256),
+            )
+        case 2:
+            length = font.get_uint16()
+            language = font.get_uint16()
+            keys = font.get_uint16_array(256)
+            sub_headers = tuple(
+                cmapSubHeader(
+                    font.get_uint16(),
+                    font.get_uint16(),
+                    font.get_uint16(),
+                    font.get_int16(),
+                )
+                for _ in range(max(keys) // 8 + 1)
+            )
+            # TODO: Validate this is a safe method of getting length.
+            table_remainder = (record.offset + record.length) - font.pointer()
+            glyph_id_range = font.get_uint16_array(table_remainder // 2)
+            return cmapSubtable_v2(
+                fmt,
+                length,
+                language,
+                keys,
+                sub_headers,
+                glyph_id_range,
+            )
+        case 4:
+            length = font.get_uint16()
+            language = font.get_uint16()
+            seg_count_x2 = font.get_uint16()
+            font.get_uint16_array(3)  # Skip search values and derive.
+            search_range = 2 ** int(log2(seg_count_x2))
+            entry_selector = int(log2(seg_count_x2 / 2.0))
+            range_shift = seg_count_x2 - search_range
+
+            return cmapSubtable_v4(
+                fmt,
+                length,
+                language,
+                seg_count_x2,
+                search_range,
+                entry_selector,
+                range_shift,
+                font.get_uint16_array(seg_count_x2 // 2),
+                font.get_uint16(),
+                font.get_uint16_array(seg_count_x2 // 2),
+                font.get_uint16_array(seg_count_x2 // 2),
+                font.get_uint16_array(seg_count_x2 // 2),
+                (),
+            )
+        case 6:
+            pass
+        case 8:
+            pass
+        case 10:
+            pass
+        case 12:
+            pass
+        case 13:
+            pass
+        case 14:
+            pass
 
 
 def parse_cmap(font: Font, record: TableRecord) -> cmap:
@@ -92,6 +155,16 @@ def parse_cmap(font: Font, record: TableRecord) -> cmap:
             for _ in range(num_tables)
         ),
     )
+
+    sub_table_offsets: dict[int, cmapSubtable] = {}
+    sub_tables = []
+    for encoding in header.encodingRecords:
+        if encoding.subtableOffset in sub_table_offsets:
+            sub_tables.append(sub_table_offsets[encoding.subtableOffset])
+            continue
+        sub_table = parse_cmap_subtable(font, record, encoding)
+        sub_tables.append(sub_table)
+        sub_table_offsets[encoding.subtableOffset] = sub_table
 
     return cmap(
         header,

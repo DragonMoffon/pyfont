@@ -70,7 +70,7 @@ def derive_fmt2_subHeaders(
     offset: int = 0,
     sz: int = 0,
 ):
-    k_max = max(keys // 8) + 1  # Get the max possible index for the subHeaders
+    k_max = max(keys) // 8 + 1  # Get the max possible index for the subHeaders
     return typ[k_max].get(buffer, offset + sz)
 
 

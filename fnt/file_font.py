@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .font import Font
+from .font import Font, TableRef
 from .tables import Table, TableRecord
 from .parsing import parsers, parse_table_directory
 
@@ -28,6 +28,9 @@ class FileFont(Font):
         b = self._data[self._byte_offset : n]
         self._byte_offset = n
         return b
+
+    def pointer(self) -> int:
+        return self._byte_offset
 
     def get_record(self, name: str) -> TableRecord:
         if name not in self._records:
@@ -66,3 +69,5 @@ class FileFont(Font):
         with open(file, "rb") as fp:
             data = fp.read()
         return cls(data, file)
+
+    # -- TableRefs for better type checking --
