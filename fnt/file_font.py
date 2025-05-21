@@ -1,7 +1,17 @@
 from pathlib import Path
 
 from .font import Font, TableRef
-from .tables import Table, TableRecord
+from .tables import (
+    Table, 
+    TableDirectory, 
+    TableRecord, 
+    head, 
+    hhea, 
+    hmtx, 
+    maxp, 
+    OS2, 
+    post
+)
 from .parsing import parsers, parse_table_directory
 
 
@@ -18,7 +28,7 @@ class FileFont(Font):
         self._records: dict[str, TableRecord] = {
             record.tableTag: record for record in table_directory.tableRecords
         }
-        self._tables: dict[str, Table] = {"TableDirectory": table_directory}
+        self._tables: dict[str, Table] = {"directory": table_directory}
 
     def seek(self, offset: int):
         self._byte_offset = offset
@@ -59,7 +69,7 @@ class FileFont(Font):
         return table
 
     def has_table(self, name: str) -> bool:
-        return name in self._records
+        return name in self._records or name in self._tables
 
     def is_table_parsed(self, name: str) -> bool:
         return name in self._tables
@@ -71,3 +81,75 @@ class FileFont(Font):
         return cls(data, file)
 
     # -- TableRefs for better type checking --
+    directory = TableRef[TableDirectory]()
+    # acnt = TableRef[acnt]()
+    # ankr = TableRef[ankr]()
+    # avar = TableRef[avar]()
+    # BASE = TableRef[BASE]()
+    # bdat = TableRef[bdat]()
+    # bhed = TableRef[bhed]()
+    # bloc = TableRef[bloc]()
+    # bsln = TableRef[bsln]()
+    # CBDT = TableRef[CBDT]()
+    # CBLC = TableRef[CBLC]()
+    # CFF  = TableRef[CFF]("CFF ")
+    # CFF2 = TableRef[CFF2]()
+    # cmap = TableRef[cmap]()
+    # COLR = TableRef[COLR]()
+    # CPAL = TableRef[CPAL]()
+    # cvar = TableRef[cvar]()
+    # cvt  = TableRef[cvt]("cvt ")
+    # DSIG = TableRef[DSIG]()
+    # EBDT = TableRef[EBDT]()
+    # EBLC = TableRef[EBLC]()
+    # EBSC = TableRef[EBSC]()
+    # fdsc = TableRef[fdsc]()
+    # feat = TableRef[feat]()
+    # fmtx = TableRef[fmtx]()
+    # fond = TableRef[fond]()
+    # fpgm = TableRef[fpgm]()
+    # fvar = TableRef[fvar]()
+    # gasp = TableRef[gasp]()
+    # GDEF = TableRef[GDEF]()
+    # glyf = TableRef[glyf]()
+    # GPOS = TableRef[GPOS]()
+    # GSUB = TableRef[GSUB]()
+    # gvar = TableRef[gvar]()
+    # hdmx = TableRef[hdmx]()
+    head = TableRef[head]()
+    hhea = TableRef[hhea]()
+    hmtx = TableRef[hmtx]()
+    # HVAR = TableRef[HVAR]()
+    # JSTF = TableRef[JSTF]()
+    # just = TableRef[just]()
+    # kern = TableRef[kern]()
+    # kerx = TableRef[kerx]()
+    # lcar = TableRef[lcar]()
+    # loca = TableRef[loca]()
+    # ltag = TableRef[ltag]()
+    # LTSH = TableRef[LTSH]()
+    # MATH = TableRef[MATH]()
+    maxp = TableRef[maxp]()
+    # MERG = TableRef[MERG]()
+    # meta = TableRef[meta]()
+    # mort = TableRef[mort]()
+    # morx = TableRef[morx]()
+    # MVAR = TableRef[MVAR]()
+    # name = TableRef[name]()
+    # opbd = TableRef[opbd]()
+    OS2 = TableRef[OS2]("OS/2")
+    # PCLT = TableRef[PCLT]()
+    post = TableRef[post]()
+    # prep = TableRef[prep]()
+    # prop = TableRef[prop]()
+    # sbix = TableRef[sbix]()
+    # STAT = TableRef[STAT]()
+    # SVG  = TableRef[SVG ]("SVG ")
+    # trak = TableRef[trak]()
+    # VDMX = TableRef[VDMX]()
+    # vhea = TableRef[vhea]()
+    # vmtx = TableRef[vmtx]()
+    # VORG = TableRef[VORG]()
+    # VVAR = TableRef[VVAR]()
+    # xref = TableRef[xref]()
+    # Zapf = TableRef[Zapf]()
