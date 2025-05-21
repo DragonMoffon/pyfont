@@ -61,6 +61,7 @@ Does not yet validate checksums or do any sort of file sanitiation.
 - [ ] meta
 - [ ] mort
 - [ ] morx
+- [ ] MVAR
 - [x] name
 - [ ] opbd
 - [x] OS/2
@@ -133,6 +134,7 @@ Does not yet validate checksums or do any sort of file sanitiation.
 - [ ] meta
 - [ ] mort
 - [ ] morx
+- [ ] MVAR
 - [x] name **possibly missing some encodings*
 - [ ] opbd
 - [x] OS/2
@@ -207,27 +209,28 @@ Does not yet validate checksums or do any sort of file sanitiation.
 - [ ] Zapf (glyph reference)
 
 ##### OTF Tables
-- [ ] BASE
-- [ ] CBDT
-- [ ] CBLC
-- [ ] CFF
-- [ ] CFF2
-- [ ] COLR
-- [ ] CPAL
-- [ ] DSIG
-- [ ] EBDT
-- [ ] EBLC
-- [ ] GDEF
-- [ ] GPOS
-- [ ] GSUB
-- [ ] HVAR
-- [ ] JSTF
-- [ ] LTSH
-- [ ] MATH
-- [ ] MERG
-- [ ] PCLT
-- [ ] STAT
-- [ ] SVG
-- [ ] VDMX
-- [ ] VORG
-- [ ] VVAR
+- [ ] BASE (baseline)
+- [ ] CBDT (color bitmap data)
+- [ ] CBLC (color bitmap location)
+- [ ] CFF (compact font format)
+- [ ] CFF2 (compact font format v2)
+- [ ] COLR (color)
+- [ ] CPAL (color palette)
+- [ ] DSIG (digital signature)
+- [ ] EBDT (embedded bitmap data)
+- [ ] EBLC (embadded bitmap location)
+- [ ] GDEF (glyph definition)
+- [ ] GPOS (glyph positioning)
+- [ ] GSUB (glyph substitution)
+- [ ] HVAR (horizontal metrix variation)
+- [ ] JSTF (justification)
+- [ ] LTSH (linear threshold)
+- [ ] MATH (mathematical typesetting)
+- [ ] MERG (merge)
+- [ ] MVAR (metrics variation)
+- [ ] PCLT (PCL 5)
+- [ ] STAT (style attributes)
+- [ ] SVG (scalar vector graphics)
+- [ ] VDMX (vertical device metrics)
+- [ ] VORG (vetical origin)
+- [ ] VVAR (vertical metrics variations)
