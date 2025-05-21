@@ -9,148 +9,148 @@ Does not yet validate checksums or do any sort of file sanitiation.
 
 ### TABLE PROGRESS
 #### Definition
-- [] acnt
-- [] ankr
-- [] avar
-- [] BASE
-- [] bdat
-- [] bhed
-- [] bloc
-- [] bsln
-- [] CBDT
-- [] CBLC
-- [] CFF
-- [] CFF2
+- [ ] acnt
+- [ ] ankr
+- [ ] avar
+- [ ] BASE
+- [ ] bdat
+- [ ] bhed
+- [ ] bloc
+- [ ] bsln
+- [ ] CBDT
+- [ ] CBLC
+- [ ] CFF
+- [ ] CFF2
 - [x] cmap
-- [] COLR
-- [] CPAL
-- [] cvar
+- [ ] COLR
+- [ ] CPAL
+- [ ] cvar
 - [x] cvt 
-- [] DSIG
-- [] EBDT
-- [] EBLC
-- [] EBSC
-- [] fdsc
-- [] feat
-- [] fmtx
-- [] fond
+- [ ] DSIG
+- [ ] EBDT
+- [ ] EBLC
+- [ ] EBSC
+- [ ] fdsc
+- [ ] feat
+- [ ] fmtx
+- [ ] fond
 - [x] fpgm
-- [] fvar
+- [ ] fvar
 - [x] gasp
-- [] GDEF
+- [ ] GDEF
 - [x] glyf
-- [] GPOS
-- [] GSUB
-- [] gvar
-- [] hdmx
+- [ ] GPOS
+- [ ] GSUB
+- [ ] gvar
+- [ ] hdmx
 - [x] head
 - [x] hhea
 - [x] hmtx
-- [] HVAR
-- [] JSTF
-- [] just
-- [] kern
-- [] kerx
-- [] lcar
+- [ ] HVAR
+- [ ] JSTF
+- [ ] just
+- [ ] kern
+- [ ] kerx
+- [ ] lcar
 - [x] loca
-- [] ltag
-- [] LTSH
-- [] MATH
+- [ ] ltag
+- [ ] LTSH
+- [ ] MATH
 - [x] maxp
-- [] MERG
-- [] meta
-- [] mort
-- [] morx
+- [ ] MERG
+- [ ] meta
+- [ ] mort
+- [ ] morx
 - [x] name
-- [] opbd
+- [ ] opbd
 - [x] OS/2
-- [] PCLT
+- [ ] PCLT
 - [x] post
 - [x] prep
-- [] prop
+- [ ] prop
 - [x] sbix
-- [] STAT
+- [ ] STAT
 - [x] SVG
-- [] trak
-- [] VDMX
-- [] vhea
-- [] vmtx
-- [] VORG
-- [] VVAR
-- [] xref
-- [] Zapf
+- [ ] trak
+- [ ] VDMX
+- [ ] vhea
+- [ ] vmtx
+- [ ] VORG
+- [ ] VVAR
+- [ ] xref
+- [ ] Zapf
 
 #### Parsing
-- [] acnt
-- [] ankr
-- [] avar
-- [] BASE
-- [] bdat
-- [] bhed
-- [] bloc
-- [] bsln
-- [] CBDT
-- [] CBLC
-- [] CFF
-- [] CFF2
-- [] cmap
-- [] COLR
-- [] CPAL
-- [] cvar
-- [] cvt 
-- [] DSIG
-- [] EBDT
-- [] EBLC
-- [] EBSC
-- [] fdsc
-- [] feat
-- [] fmtx
-- [] fond
-- [] fpgm
-- [] fvar
-- [] gasp
-- [] GDEF
-- [] glyf
-- [] GPOS
-- [] GSUB
-- [] gvar
-- [] hdmx
+- [ ] acnt
+- [ ] ankr
+- [ ] avar
+- [ ] BASE
+- [ ] bdat
+- [ ] bhed
+- [ ] bloc
+- [ ] bsln
+- [ ] CBDT
+- [ ] CBLC
+- [ ] CFF
+- [ ] CFF2
+- [ ] cmap
+- [ ] COLR
+- [ ] CPAL
+- [ ] cvar
+- [ ] cvt 
+- [ ] DSIG
+- [ ] EBDT
+- [ ] EBLC
+- [ ] EBSC
+- [ ] fdsc
+- [ ] feat
+- [ ] fmtx
+- [ ] fond
+- [ ] fpgm
+- [ ] fvar
+- [ ] gasp
+- [ ] GDEF
+- [ ] glyf
+- [ ] GPOS
+- [ ] GSUB
+- [ ] gvar
+- [ ] hdmx
 - [x] head
 - [x] hhea
 - [x] hmtx
-- [] HVAR
-- [] JSTF
-- [] just
-- [] kern
-- [] kerx
-- [] lcar
-- [] loca
-- [] ltag
-- [] LTSH
-- [] MATH
+- [ ] HVAR
+- [ ] JSTF
+- [ ] just
+- [ ] kern
+- [ ] kerx
+- [ ] lcar
+- [ ] loca
+- [ ] ltag
+- [ ] LTSH
+- [ ] MATH
 - [x] maxp
-- [] MERG
-- [] meta
-- [] mort
-- [] morx
+- [ ] MERG
+- [ ] meta
+- [ ] mort
+- [ ] morx
 - [x] name **possibly missing some encodings*
-- [] opbd
+- [ ] opbd
 - [x] OS/2
-- [] PCLT
+- [ ] PCLT
 - [x] post
-- [] prep
-- [] prop
-- [] sbix
-- [] STAT
-- [] SVG
-- [] trak
-- [] VDMX
-- [] vhea
-- [] vmtx
-- [] VORG
-- [] VVAR
-- [] xref
-- [] Zapf
+- [ ] prep
+- [ ] prop
+- [ ] sbix
+- [ ] STAT
+- [ ] SVG
+- [ ] trak
+- [ ] VDMX
+- [ ] vhea
+- [ ] vmtx
+- [ ] VORG
+- [ ] VVAR
+- [ ] xref
+- [ ] Zapf
 
 #### Complete
 
@@ -159,75 +159,75 @@ Does not yet validate checksums or do any sort of file sanitiation.
 - [x] Table Directory
 
 ##### TTF Tables
-- [] acnt (accent attachment)
-- [] ankr (anchor point)
-- [] avar (axis variation)
-- [] bdat (bitmap data)
-- [] bhed (bitmap font header)
-- [] bloc (bitmap location)
-- [] bsln (baseline)
-- [] cmap (character code mapping)
-- [] cvar (CVT variation)
-- [] cvt (control value)
-- [] EBSC (embedded bitmap scaling control)
-- [] fdsc (font descriptor)
-- [] feat (layout feature)
-- [] fmtx (font metrics)
-- [] fond (font family compatibility)
-- [] fpgm (font program)
-- [] fvar (font variation)
-- [] gasp (grid-fitting and scan-conversion procedure)
-- [] glyf (glyph outline)
-- [] gvar (glyph variation)
-- [] hdmx (horizontal device metrics)
-- [] head (font header)
-- [] hhea (horizontal header)
-- [] hmtx (horizontal metrics)
-- [] just (justification)
-- [] kern (kerning)
-- [] kerx (extended kerning)
-- [] lcar (ligature caret)
-- [] loca (glyph location)
-- [] ltag (language tag)
-- [] maxp (maximum profile)
-- [] meta (metadata)
-- [] mort (metamorphosis) table (deprecated)
-- [] morx (extended metamorphosis)
-- [] name (name)
-- [] opbd (optical bounds)
-- [] OS/2 (compatibility)
-- [] post (glyph name and PostScript compatibility)
-- [] prep (control value program)
-- [] prop (properties)
-- [] sbix (extended bitmaps)
-- [] trak (tracking)
-- [] vhea (vertical header)
-- [] vmtx (vertical metrics)
-- [] xref (cross-reference)
-- [] Zapf (glyph reference)
+- [ ] acnt (accent attachment)
+- [ ] ankr (anchor point)
+- [ ] avar (axis variation)
+- [ ] bdat (bitmap data)
+- [ ] bhed (bitmap font header)
+- [ ] bloc (bitmap location)
+- [ ] bsln (baseline)
+- [ ] cmap (character code mapping)
+- [ ] cvar (CVT variation)
+- [ ] cvt (control value)
+- [ ] EBSC (embedded bitmap scaling control)
+- [ ] fdsc (font descriptor)
+- [ ] feat (layout feature)
+- [ ] fmtx (font metrics)
+- [ ] fond (font family compatibility)
+- [ ] fpgm (font program)
+- [ ] fvar (font variation)
+- [ ] gasp (grid-fitting and scan-conversion procedure)
+- [ ] glyf (glyph outline)
+- [ ] gvar (glyph variation)
+- [ ] hdmx (horizontal device metrics)
+- [ ] head (font header)
+- [ ] hhea (horizontal header)
+- [ ] hmtx (horizontal metrics)
+- [ ] just (justification)
+- [ ] kern (kerning)
+- [ ] kerx (extended kerning)
+- [ ] lcar (ligature caret)
+- [ ] loca (glyph location)
+- [ ] ltag (language tag)
+- [ ] maxp (maximum profile)
+- [ ] meta (metadata)
+- [ ] mort (metamorphosis) table (deprecated)
+- [ ] morx (extended metamorphosis)
+- [ ] name (name)
+- [ ] opbd (optical bounds)
+- [ ] OS/2 (compatibility)
+- [ ] post (glyph name and PostScript compatibility)
+- [ ] prep (control value program)
+- [ ] prop (properties)
+- [ ] sbix (extended bitmaps)
+- [ ] trak (tracking)
+- [ ] vhea (vertical header)
+- [ ] vmtx (vertical metrics)
+- [ ] xref (cross-reference)
+- [ ] Zapf (glyph reference)
 
 ##### OTF Tables
-- [] BASE
-- [] CBDT
-- [] CBLC
-- [] CFF
-- [] CFF2
-- [] COLR
-- [] CPAL
-- [] DSIG
-- [] EBDT
-- [] EBLC
-- [] GDEF
-- [] GPOS
-- [] GSUB
-- [] HVAR
-- [] JSTF
-- [] LTSH
-- [] MATH
-- [] MERG
-- [] PCLT
-- [] STAT
-- [] SVG
-- [] VDMX
-- [] VORG
-- [] VVAR
+- [ ] BASE
+- [ ] CBDT
+- [ ] CBLC
+- [ ] CFF
+- [ ] CFF2
+- [ ] COLR
+- [ ] CPAL
+- [ ] DSIG
+- [ ] EBDT
+- [ ] EBLC
+- [ ] GDEF
+- [ ] GPOS
+- [ ] GSUB
+- [ ] HVAR
+- [ ] JSTF
+- [ ] LTSH
+- [ ] MATH
+- [ ] MERG
+- [ ] PCLT
+- [ ] STAT
+- [ ] SVG
+- [ ] VDMX
+- [ ] VORG
+- [ ] VVAR
