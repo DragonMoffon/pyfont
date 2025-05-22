@@ -7,6 +7,12 @@ from fnt.tables import (
     cmap,
     cmapHeader,
     EncodingRecord,
+    MapGroup,
+    VariationSelector,
+    UnicodeValueRange,
+    DefaultUVS,
+    UVSMapping,
+    NonDefaultUVS,
     cmapSubtable,
     cmapSubtable_v0,
     cmapSubHeader,
@@ -67,10 +73,23 @@ def parse_table_directory(font: Font, offset: int = 0) -> TableDirectory:
     )
 
 
+def parse_map_group(font: Font):
+    return MapGroup(font.get_uint32(), font.get_uint32(), font.get_uint32())
+
+
+def parse_variation_selector(font: Font):
+    return VariationSelector(
+        font.get_uint32(),
+        font.get_offset32(),
+        font.get_offset32(),
+    )
+
+
 def parse_cmap_subtable(
     font: Font, record: TableRecord, encoding: EncodingRecord
 ) -> cmapSubtable:
-    font.seek(record.offset + encoding.subtableOffset)
+    offset = record.offset + encoding.subtableOffset
+    font.seek(offset)
     fmt = font.get_uint16()
     match fmt:
         case 0:
@@ -113,6 +132,7 @@ def parse_cmap_subtable(
             entry_selector = int(log2(seg_count_x2 / 2.0))
             range_shift = seg_count_x2 - search_range
 
+            # TODO: get actual id array
             return cmapSubtable_v4(
                 fmt,
                 length,
@@ -129,17 +149,91 @@ def parse_cmap_subtable(
                 (),
             )
         case 6:
-            pass
+            length = font.get_uint16()
+            return cmapSubtable_v6(
+                fmt,
+                length,
+                font.get_uint16(),
+                font.get_uint16(),
+                font.get_uint16(),
+                font.get_uint16_array(length),
+            )
         case 8:
-            pass
+            length = font.get_uint16()
+            language = font.get_uint16()
+            is32 = font.get_uint8_array(8192)
+            count = font.get_uint32()
+            return cmapSubtable_v8(
+                fmt,
+                length,
+                language,
+                is32,
+                count,
+                tuple(parse_map_group(font) for _ in range(count)),
+            )
         case 10:
-            pass
+            reserved = font.get_uint16()
+            length = font.get_uint16()
+            return cmapSubtable_v10(
+                fmt,
+                reserved,
+                length,
+                font.get_uint32(),
+                font.get_uint32(),
+                font.get_uint32(),
+                font.get_uint16_array(length),
+            )
         case 12:
-            pass
+            reserved = font.get_uint16()
+            length = font.get_uint32()
+            language = font.get_uint32()
+            count = font.get_uint32()
+            return cmapSubtable_v12(
+                fmt,
+                reserved,
+                length,
+                language,
+                count,
+                tuple(parse_map_group(font) for _ in range(count)),
+            )
         case 13:
-            pass
+            reserved = font.get_uint16()
+            length = font.get_uint32()
+            count = font.get_uint32()
+            return cmapSubtable_v13(
+                fmt,
+                reserved,
+                length,
+                count,
+                tuple(parse_map_group(font) for _ in range(count)),
+            )
         case 14:
-            pass
+            length = font.get_uint16()
+            count = font.get_uint32()
+            selectors = tuple(parse_variation_selector(font) for _ in range(count))
+            default = []
+            non_default = []
+            for selector in selectors:
+                if selector.defaultUVSOffset != 0:
+                    font.seek(offset + selector.defaultUVSOffset)
+                    num = font.get_uint32()
+                    ranges = tuple(
+                        UnicodeValueRange(font.get_uint24(), font.get_uint8())
+                        for _ in range(num)
+                    )
+                    default.append(DefaultUVS(num, ranges))
+
+                if selector.nonDefaultUVSOffset != 0:
+                    font.seek(offset + selector.nonDefaultUVSOffset)
+                    num = font.get_uint32()
+                    mappings = tuple(
+                        UVSMapping(font.get_uint24(), font.get_uint16())
+                        for _ in range(num)
+                    )
+                    non_default.append(NonDefaultUVS(num, mappings))
+            return cmapSubtable_v14(
+                fmt, length, count, selectors, tuple(default), tuple(non_default)
+            )
 
 
 def parse_cmap(font: Font, record: TableRecord) -> cmap:

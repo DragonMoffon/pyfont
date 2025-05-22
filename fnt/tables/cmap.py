@@ -161,7 +161,7 @@ class NonDefaultUVS:
 @table
 class cmapSubtable_v14:
     format: uint16
-    lenght: uint16
+    length: uint16
     numVarSelectorRecords: uint32
     varSelector: tuple[VariationSelector, ...]
     defaultUVS: tuple[DefaultUVS, ...]
