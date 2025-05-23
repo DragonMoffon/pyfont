@@ -84,7 +84,204 @@ class TableDirectory:
     tableRecords: tuple[TableRecord, ...]
 
 
-# -- REQUIRED --
+# -- FONT TABLES --
+
+
+@table
+class acnt_desciption_fmt0:
+    description: uint8  # actually an uint1
+    primaryGlyphIndex: uint16
+    primaryAttachmentPoint: uint8
+    secondaryInfoIndex: uint8
+
+
+@table
+class acnt_desciption_fmt1:
+    description: uint8  # actually an uint1
+    primaryGlyphIndex: uint16
+    extensionOffset: uint16
+
+
+@table
+class acnt_extension:
+    components: uint8  # actually an uint1
+    secondaryInfoIndex: tuple[uint8, ...]
+    primaryAttachmentPoint: tuple[uint8, ...]
+
+
+@table
+class acnt_secondary_data:
+    secondaryGlyphIndex: uint16
+    secondaryGlyphAttachmentNumber: uint8
+
+
+# TODO: acnt - Unsude if these are correct table types
+@table
+class acnt:
+    version: F2DOT14
+    firstAccentedGlyphIndex: uint16
+    lastAccentedGlyphIndex: uint16
+    descriptionOffset: uint32
+    extensionOffset: uint32
+    secondaryOffset: uint32
+    glyphs: tuple[acnt_desciption_fmt0 | acnt_desciption_fmt1, ...]
+    ext: tuple[acnt_extension, ...]
+    accents: tuple[acnt_secondary_data, ...]
+
+
+@table
+class ankr_glyph:
+    numPoints: uint32
+    anchorPoints: tuple[uint32, ...]
+
+
+@table
+class ankr:
+    version: uint16
+    flags: uint16
+    lookupTableOffset: uint32
+    glyphDataTableOffset: uint32
+    lookupTable: tuple[offset16, ...]
+    glyphDataTable: tuple[ankr_glyph, ...]
+
+
+@table
+class AxisValueMap:
+    fromCoordinate: F2DOT14
+    toCoordinate: F2DOT14
+
+
+@table
+class SegmentMaps:
+    positionalMapCount: uint16
+    axisValueMaps: tuple[AxisValueMap, ...]
+
+
+@table
+class avar:
+    majorVersion: uint16
+    minorVersion: uint16
+    reserved: uint16
+    axisCount: uint16
+    segmentMaps: tuple[SegmentMaps, ...]
+
+
+# TODO: BASE
+# TODO: bdat
+# TODO: bhed
+# TODO: bloc
+# TODO: bsln
+# TODO: CBDT
+# TODO: CBLC
+# TODO: CFF
+# TODO: CFF2
+# TODO: cmap
+# TODO: COLR
+# TODO: CPAL
+# TODO: cvar
+
+
+@table
+class cvt:
+    program: tuple[FWORD]
+
+
+# TODO: DSIG
+# TODO: EBDT
+# TODO: EBLC
+# TODO: EBSC
+# TODO: fdsc
+# TODO: feat
+# TODO: fmtx
+# TODO: fond
+
+
+@table
+class fpgm:
+    program: tuple[uint8, ...]
+
+
+# TODO: fvar
+
+
+@table
+class gaspRange:
+    rangeMaxPPEM: uint16
+    rangeGaspBehavior: uint16
+
+
+@table
+class gasp:
+    version: uint16
+    numRanges: uint16
+    gaspRanges: tuple[gaspRange, ...]
+
+
+# TODO: GDEF
+
+
+@table
+class SimpleGlyph:
+    numberOfContours: int16
+    xMin: int16
+    xMax: int16
+    yMin: int16
+    yMax: int16
+    endPtsOfContours: tuple[uint16, ...]
+    instructionLength: uint16
+    instructions: tuple[uint8, ...]
+    flags: tuple[uint8, ...]
+    xCoordinates: tuple[uint8 | int16, ...]
+    yCoordinates: tuple[uint8 | int16, ...]
+
+
+@table
+class CompositeGlyphDescription:
+    flags: uint16
+    glyphIndex: uint16
+    xOffset: uint8 | int8 | int16 | uint16
+    yOffset: uint8 | int8 | int16 | uint16
+    xScale: F2DOT14
+    yScale: F2DOT14 = None  # type: ignore
+    scale01: F2DOT14 = None  # type: ignore
+    scale10: F2DOT14 = None  # type: ignore
+
+    def __post_init__(self):
+        if self.yScale is None:
+            self.yScale = self.xScale
+
+        if self.scale01 is None or self.scale10 is None:
+            self.scale01 = self.scale10 = 1.0
+
+    @property
+    def transform(self) -> tuple[float, float, float, float]:
+        return self.xScale, self.scale01, self.scale10, self.yScale
+
+
+@table
+class CompositeGlyph:
+    numberOfContours: int16
+    xMin: int16
+    xMax: int16
+    yMin: int16
+    yMax: int16
+    children: tuple[CompositeGlyphDescription, ...]
+    instructionLength: uint16
+    instructions: tuple[uint8, ...]
+
+
+type glyfGlyph = SimpleGlyph | CompositeGlyph
+
+
+@table
+class glyf:
+    glyphs: tuple[glyfGlyph, ...]
+
+
+# TODO: GPOS
+# TODO: GSUB
+# TODO: gvar
+# TODO: hdmx
 
 
 @table
@@ -140,6 +337,24 @@ class hmtx:
     leftSideBearings: tuple[FWORD, ...]
 
 
+# TODO: HVAR
+# TODO: JSTF
+# TODO: just
+# TODO: kern
+# TODO: kerx
+# TODO: lcar
+
+
+@table
+class loca:
+    offsets: tuple[offset16 | offset32, ...]
+
+
+# TODO: ltag
+# TODO: LTSH
+# TODO: MATH
+
+
 @table
 class maxp_v05:
     version: version16dot16
@@ -166,6 +381,12 @@ class maxp_v10:
 
 
 type maxp = maxp_v05 | maxp_v10
+
+# TODO: MERG
+# TODO: meta
+# TODO: mort
+# TODO: morx
+# TODO: MVAR
 
 
 @table
@@ -205,6 +426,8 @@ class name_v1:
 
 
 type name = name_v0 | name_v1
+
+# TODO: opbd
 
 
 @table
@@ -269,6 +492,9 @@ class OS2_v5(OS2_v2):
 type OS2 = OS2_v0 | OS2_v1 | OS2_v2 | OS2_v3 | OS2_v4 | OS2_v4
 
 
+# TODO: PCLT
+
+
 @table
 class post_v1:
     version: version16dot16
@@ -300,98 +526,13 @@ post_v4 = post_v1
 
 type post = post_v1 | post_v2 | post_v25 | post_v3 | post_v4
 
-# -- OUTLINES --
-
-
-@table
-class cvt:
-    program: tuple[FWORD]
-
-
-@table
-class fpgm:
-    program: tuple[uint8, ...]
-
 
 @table
 class prep:
     program: tuple[uint8, ...]
 
 
-@table
-class loca:
-    offsets: tuple[offset16 | offset32, ...]
-
-
-@table
-class gaspRange:
-    rangeMaxPPEM: uint16
-    rangeGaspBehavior: uint16
-
-
-@table
-class gasp:
-    version: uint16
-    numRanges: uint16
-    gaspRanges: tuple[gaspRange, ...]
-
-
-@table
-class SimpleGlyph:
-    numberOfContours: int16
-    xMin: int16
-    xMax: int16
-    yMin: int16
-    yMax: int16
-    endPtsOfContours: tuple[uint16, ...]
-    instructionLength: uint16
-    instructions: tuple[uint8, ...]
-    flags: tuple[uint8, ...]
-    xCoordinates: tuple[uint8 | int16, ...]
-    yCoordinates: tuple[uint8 | int16, ...]
-
-
-@table
-class CompositeGlyphDescription:
-    flags: uint16
-    glyphIndex: uint16
-    xOffset: uint8 | int8 | int16 | uint16
-    yOffset: uint8 | int8 | int16 | uint16
-    xScale: F2DOT14
-    yScale: F2DOT14 = None  # type: ignore
-    scale01: F2DOT14 = None  # type: ignore
-    scale10: F2DOT14 = None  # type: ignore
-
-    def __post_init__(self):
-        if self.yScale is None:
-            self.yScale = self.xScale
-
-        if self.scale01 is None or self.scale10 is None:
-            self.scale01 = self.scale10 = 1.0
-
-    @property
-    def transform(self) -> tuple[float, float, float, float]:
-        return self.xScale, self.scale01, self.scale10, self.yScale
-
-
-@table
-class CompositeGlyph:
-    numberOfContours: int16
-    xMin: int16
-    xMax: int16
-    yMin: int16
-    yMax: int16
-    children: tuple[CompositeGlyphDescription, ...]
-    instructionLength: uint16
-    instructions: tuple[uint8, ...]
-
-
-type glyfGlyph = SimpleGlyph | CompositeGlyph
-
-
-@table
-class glyf:
-    glyphs: tuple[glyfGlyph, ...]
+# TODO: prop
 
 
 @table
@@ -414,9 +555,6 @@ class SVG:
     svgDocumentListOffset: offset32
     reserved: uint32
     svgDocumentList: SVGDocumentList
-
-
-# -- BITMAP --
 
 
 @table
@@ -447,6 +585,18 @@ class sbix:
     header: sbixHeader
     strikes: tuple[Strike, ...]
     glyphs: tuple[sbixGlyph, ...]
+
+
+# TODO: STAT
+# TODO: SVG
+# TODO: trak
+# TODO: VDMX
+# TODO: vhea
+# TODO: vmtx
+# TODO: VORG
+# TODO: VVAR
+# TODO: xref
+# TODO: Zapf
 
 
 type Table = (

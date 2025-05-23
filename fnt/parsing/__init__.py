@@ -4,6 +4,7 @@ from fnt.font import Font, ParseMethod
 from fnt.tables import (
     TableRecord,
     TableDirectory,
+    acnt,
     cmap,
     cmapHeader,
     EncodingRecord,
@@ -49,6 +50,11 @@ from fnt.tables import (
 from fnt.flags import Platform, WindowsEncoding, MacintoshEncoding
 
 
+# -- TOP LEVEL TABLES --
+
+# TODO: Font Collection Header
+
+
 def parse_table_record(font: Font) -> TableRecord:
     return TableRecord(
         font.get_tag(), font.get_uint32(), font.get_offset32(), font.get_uint32()
@@ -71,6 +77,24 @@ def parse_table_directory(font: Font, offset: int = 0) -> TableDirectory:
     return TableDirectory(
         version, num_tables, search_range, entry_selector, range_shift, records
     )
+
+
+# -- FONT TABLES --
+
+# TODO: acnt
+def parse_acnt(font: Font, record: TableRecord) -> acnt:
+
+# TODO: ankr
+# TODO: avar
+# TODO: BASE
+# TODO: bdat
+# TODO: bhed
+# TODO: bloc
+# TODO: bsln
+# TODO: CBDT
+# TODO: CBLC
+# TODO: CFF
+# TODO: CFF2
 
 
 def parse_map_group(font: Font):
@@ -268,6 +292,29 @@ def parse_cmap(font: Font, record: TableRecord) -> cmap:
     )
 
 
+# TODO: COLR
+# TODO: CPAL
+# TODO: cvar
+# TODO: cvt
+# TODO: DSIG
+# TODO: EBDT
+# TODO: EBLC
+# TODO: EBSC
+# TODO: fdsc
+# TODO: feat
+# TODO: fmtx
+# TODO: fond
+# TODO: fpgm
+# TODO: fvar
+# TODO: gasp
+# TODO: GDEF
+# TODO: glyf
+# TODO: GPOS
+# TODO: GSUB
+# TODO: gvar
+# TODO: hdmx
+
+
 def parse_head(font: Font, record: TableRecord) -> head:
     font.seek(record.offset)
     return head(
@@ -328,6 +375,18 @@ def parse_hmtx(font: Font, record: TableRecord) -> hmtx:
     return hmtx(metrics, side_beaings)
 
 
+# TODO: HVAR
+# TODO: JSTF
+# TODO: just
+# TODO: kern
+# TODO: kerx
+# TODO: lcar
+# TODO: loca
+# TODO: ltag
+# TODO: LTSH
+# TODO: MATH
+
+
 def parse_maxp(font: Font, record: TableRecord) -> maxp:
     font.seek(record.offset)
     version = font.get_version_legacy()
@@ -351,6 +410,13 @@ def parse_maxp(font: Font, record: TableRecord) -> maxp:
         font.get_uint16(),
         font.get_uint16(),
     )
+
+
+# TODO: MERG
+# TODO: meta
+# TODO: mort
+# TODO: morx
+# TODO: MVAR
 
 
 def parse_name(font: Font, record: TableRecord) -> name:
@@ -404,6 +470,9 @@ def parse_name(font: Font, record: TableRecord) -> name:
     if version == 0:
         return name_v0(version, count, offset, records)
     return name_v1(version, count, offset, records, lang_tag_count, lang_tags)
+
+
+# TODO: opbd
 
 
 def parse_OS2(font: Font, record: TableRecord) -> OS2:
@@ -590,6 +659,9 @@ def parse_OS2(font: Font, record: TableRecord) -> OS2:
     )
 
 
+# TODO: PCLT
+
+
 def parse_post(font: Font, record: TableRecord) -> post:
     font.seek(record.offset)
     version = font.get_version_legacy()
@@ -650,6 +722,21 @@ def parse_post(font: Font, record: TableRecord) -> post:
         min_mem_type1,
         max_mem_type1,
     )
+
+
+# TODO: prep
+# TODO: prop
+# TODO: sbix
+# TODO: STAT
+# TODO: SVG
+# TODO: trak
+# TODO: VDMX
+# TODO: vhea
+# TODO: vmtx
+# TODO: VORG
+# TODO: VVAR
+# TODO: xref
+# TODO: Zapf
 
 
 parsers: dict[str, ParseMethod] = {

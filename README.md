@@ -23,7 +23,7 @@ Does not yet validate checksums or do any sort of file sanitiation.
 - [ ] bhed (bitmap font header)
 - [ ] bloc (bitmap location)
 - [ ] bsln (baseline)
-- [x] cmap (character code mapping)
+- [ ] cmap (character code mapping)
 - [ ] cvar (CVT variation)
 - [ ] cvt (control value)
 - [ ] EBSC (embedded bitmap scaling control)
@@ -92,8 +92,8 @@ Does not yet validate checksums or do any sort of file sanitiation.
 
 #### Definition
 - [ ] acnt
-- [ ] ankr
-- [ ] avar
+- [x] ankr
+- [x] avar
 - [ ] BASE
 - [ ] bdat
 - [ ] bhed
