@@ -132,7 +132,6 @@ def parse_cmap_subtable(
             entry_selector = int(log2(seg_count_x2 / 2.0))
             range_shift = seg_count_x2 - search_range
 
-            # TODO: get actual id array
             return cmapSubtable_v4(
                 fmt,
                 length,
@@ -146,7 +145,7 @@ def parse_cmap_subtable(
                 font.get_uint16_array(seg_count_x2 // 2),
                 font.get_uint16_array(seg_count_x2 // 2),
                 font.get_uint16_array(seg_count_x2 // 2),
-                (),
+                font.get_uint16_array((offset + length) - font.pointer()),
             )
         case 6:
             length = font.get_uint16()

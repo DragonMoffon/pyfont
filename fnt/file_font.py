@@ -2,15 +2,16 @@ from pathlib import Path
 
 from .font import Font, TableRef
 from .tables import (
-    Table, 
-    TableDirectory, 
-    TableRecord, 
-    head, 
-    hhea, 
-    hmtx, 
-    maxp, 
-    OS2, 
-    post
+    Table,
+    TableDirectory,
+    TableRecord,
+    head as headTable,
+    hhea as hheaTable,
+    hmtx as hmtxTable,
+    maxp as maxpTable,
+    cmap as cmapTable,
+    OS2 as OS2Table,
+    post as postTable,
 )
 from .parsing import parsers, parse_table_directory
 
@@ -81,7 +82,7 @@ class FileFont(Font):
         return cls(data, file)
 
     # -- TableRefs for better type checking --
-    directory = TableRef(TableDirectory, 'directory')
+    directory: TableDirectory | None = TableRef(TableDirectory, "directory")
     # acnt = TableRef(acnt)
     # ankr = TableRef(ankr)
     # avar = TableRef(avar)
@@ -94,7 +95,7 @@ class FileFont(Font):
     # CBLC = TableRef(CBLC)
     # CFF  = TableRef(CFF, "CFF ")
     # CFF2 = TableRef(CFF2)
-    # cmap = TableRef(cmap)
+    cmap: cmapTable | None = TableRef(cmapTable)
     # COLR = TableRef(COLR)
     # CPAL = TableRef(CPAL)
     # cvar = TableRef(cvar)
@@ -116,9 +117,9 @@ class FileFont(Font):
     # GSUB = TableRef(GSUB)
     # gvar = TableRef(gvar)
     # hdmx = TableRef(hdmx)
-    head = TableRef(head)
-    hhea = TableRef(hhea)
-    hmtx = TableRef(hmtx)
+    head: headTable | None = TableRef(headTable)
+    hhea: hheaTable | None = TableRef(hheaTable)
+    hmtx: hmtxTable | None = TableRef(hmtxTable)
     # HVAR = TableRef(HVAR)
     # JSTF = TableRef(JSTF)
     # just = TableRef(just)
@@ -129,7 +130,7 @@ class FileFont(Font):
     # ltag = TableRef(ltag)
     # LTSH = TableRef(LTSH)
     # MATH = TableRef(MATH)
-    maxp = TableRef(maxp)
+    maxp: maxpTable | None = TableRef(maxpTable)
     # MERG = TableRef(MERG)
     # meta = TableRef(meta)
     # mort = TableRef(mort)
@@ -137,9 +138,9 @@ class FileFont(Font):
     # MVAR = TableRef(MVAR)
     # name = TableRef(name)
     # opbd = TableRef(opbd)
-    OS2 = TableRef(OS2, "OS/2")
+    OS2: OS2Table | None = TableRef(OS2Table, "OS/2")
     # PCLT = TableRef(PCLT)
-    post = TableRef(post)
+    post: postTable | None = TableRef(postTable)
     # prep = TableRef(prep)
     # prop = TableRef(prop)
     # sbix = TableRef(sbix)
