@@ -602,6 +602,9 @@ class sbix:
 type Table = (
     TTCHeader
     | TableDirectory
+    | acnt
+    | ankr
+    | avar
     | cmap
     | glyf
     | head
