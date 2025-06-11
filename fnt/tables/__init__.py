@@ -115,7 +115,7 @@ class acnt_secondary_data:
     secondaryGlyphAttachmentNumber: uint8
 
 
-# TODO: acnt - Unsude if these are correct table types
+# TODO: acnt - Unsure if these are correct table types
 @table
 class acnt:
     version: F2DOT14
@@ -492,7 +492,27 @@ class OS2_v5(OS2_v2):
 type OS2 = OS2_v0 | OS2_v1 | OS2_v2 | OS2_v3 | OS2_v4 | OS2_v4
 
 
-# TODO: PCLT
+# TODO: PCLT unique types and functions for fetching them.
+
+
+@table
+class PCLT:
+    majorVersion: uint16
+    minorVersion: uint16
+    fontNumber: uint32
+    pitch: uint16
+    xHeight: uint16
+    style: uint16
+    typeFamily: uint16
+    capHeight: uint16
+    symbolSet: uint16
+    typeface: tuple[int8, ...]  # Always 16 items
+    characterComplement: tuple[int8, ...]  # Always 8 items
+    fileName: tuple[int8, ...]  # Always 6 itms
+    strokeWeight: int8
+    widthType: int8
+    serifStyle: uint8
+    reserved: uint8
 
 
 @table

@@ -1,3 +1,4 @@
+from typing import TypeVar, Generic
 from dataclasses import dataclass
 
 __all__ = (

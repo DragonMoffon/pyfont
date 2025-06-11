@@ -5,6 +5,19 @@ from fnt.tables import (
     TableRecord,
     TableDirectory,
     acnt,
+    AxisValueMap,
+    SegmentMaps,
+    avar,
+    # ankr,
+    # BASE,
+    # bdat,
+    # bhed,
+    # bloc,
+    # bsln,
+    # CBDT,
+    # CBLC,
+    # CFF,
+    # CFF2,
     cmap,
     cmapHeader,
     EncodingRecord,
@@ -25,13 +38,49 @@ from fnt.tables import (
     cmapSubtable_v12,
     cmapSubtable_v13,
     cmapSubtable_v14,
+    # COLR,
+    # CPAL,
+    # cvar,
+    # cvt,
+    # DSIG,
+    # EBDT,
+    # EBLC,
+    # EBSC,
+    # fdsc,
+    # feat,
+    # fmtx,
+    # fond,
+    # fpgm,
+    # fvar,
+    # gasp,
+    # GDEF,
+    # glyf,
+    # GPOS,
+    # GSUB,
+    # gvar,
+    # hdmx,
     head,
     hhea,
     LongHorMetric,
     hmtx,
+    # HVAR,
+    # JSTF,
+    # just,
+    # kern,
+    # kerx,
+    # lcar,
+    # loca,
+    # ltag,
+    # LTSH,
+    # MATH,
     maxp,
     maxp_v05,
     maxp_v10,
+    # MERG,
+    # meta,
+    # mort,
+    # morx,
+    # MVAR,
     name,
     NameRecord,
     LangTagRecord,
@@ -42,10 +91,24 @@ from fnt.tables import (
     OS2_v1,
     OS2_v5,
     OS2_v4,
+    PCLT,
     post,
     post_v1,
     post_v2,
     post_v25,
+    # prep,
+    # prop,
+    # sbix,
+    # STAT,
+    # SVG,
+    # trak,
+    # VDMX,
+    # vhea,
+    # vmtx,
+    # VORG,
+    # VVAR,
+    # xref,
+    # Zapf,
 )
 from fnt.flags import Platform, WindowsEncoding, MacintoshEncoding
 
@@ -81,11 +144,40 @@ def parse_table_directory(font: Font, offset: int = 0) -> TableDirectory:
 
 # -- FONT TABLES --
 
+
 # TODO: acnt
 def parse_acnt(font: Font, record: TableRecord) -> acnt:
+    pass
+
 
 # TODO: ankr
-# TODO: avar
+
+
+def parse_SegmentMaps(font: Font) -> SegmentMaps:
+    count = font.get_uint16()
+    return SegmentMaps(
+        count,
+        tuple(
+            AxisValueMap(font.get_F2DOT14(), font.get_F2DOT14()) for _ in range(count)
+        ),
+    )
+
+
+def parse_avar(font: Font, record: TableRecord) -> avar:
+    font.seek(record.offset)
+    major = font.get_uint16()
+    minor = font.get_uint16()
+    reserved = font.get_uint16()
+    count = font.get_uint16()
+    return avar(
+        major,
+        minor,
+        reserved,
+        count,
+        tuple(parse_SegmentMaps(font) for _ in range(count)),
+    )
+
+
 # TODO: BASE
 # TODO: bdat
 # TODO: bhed
@@ -659,7 +751,26 @@ def parse_OS2(font: Font, record: TableRecord) -> OS2:
     )
 
 
-# TODO: PCLT
+def parse_PCLT(font: Font, record: TableRecord) -> PCLT:
+    font.seek(record.offset)
+    return PCLT(
+        font.get_uint16(),
+        font.get_uint16(),
+        font.get_uint32(),
+        font.get_uint16(),
+        font.get_uint16(),
+        font.get_uint16(),
+        font.get_uint16(),
+        font.get_uint16(),
+        font.get_uint16(),
+        font.get_int8_array(16),
+        font.get_int8_array(8),
+        font.get_int8_array(6),
+        font.get_int8(),
+        font.get_int8(),
+        font.get_uint8(),
+        font.get_uint8(),
+    )
 
 
 def parse_post(font: Font, record: TableRecord) -> post:
@@ -740,6 +851,7 @@ def parse_post(font: Font, record: TableRecord) -> post:
 
 
 parsers: dict[str, ParseMethod] = {
+    "avar": parse_avar,
     "cmap": parse_cmap,
     "head": parse_head,
     "hhea": parse_hhea,
@@ -748,6 +860,7 @@ parsers: dict[str, ParseMethod] = {
     "name": parse_name,
     "OS/2": parse_OS2,
     "post": parse_post,
+    "PCLT": parse_PCLT,
 }
 
 __all__ = ("ParseMethod", "parse_table_directory", "parsers")

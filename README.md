@@ -18,7 +18,7 @@ Does not yet validate checksums or do any sort of file sanitiation.
 ##### TTF Tables
 - [ ] acnt (accent attachment)
 - [ ] ankr (anchor point)
-- [ ] avar (axis variation)
+- [x] avar (axis variation)
 - [ ] bdat (bitmap data)
 - [ ] bhed (bitmap font header)
 - [ ] bloc (bitmap location)
@@ -83,7 +83,7 @@ Does not yet validate checksums or do any sort of file sanitiation.
 - [ ] MATH (mathematical typesetting)
 - [ ] MERG (merge)
 - [ ] MVAR (metrics variation)
-- [ ] PCLT (PCL 5)
+- [x] PCLT (PCL 5)
 - [ ] STAT (style attributes)
 - [ ] SVG (scalar vector graphics)
 - [ ] VDMX (vertical device metrics)
@@ -147,7 +147,7 @@ Does not yet validate checksums or do any sort of file sanitiation.
 - [x] name
 - [ ] opbd
 - [x] OS/2
-- [ ] PCLT
+- [x] PCLT
 - [x] post
 - [x] prep
 - [ ] prop
@@ -166,7 +166,7 @@ Does not yet validate checksums or do any sort of file sanitiation.
 #### Parsing
 - [ ] acnt
 - [ ] ankr
-- [ ] avar
+- [x] avar
 - [ ] BASE
 - [ ] bdat
 - [ ] bhed
@@ -220,7 +220,7 @@ Does not yet validate checksums or do any sort of file sanitiation.
 - [x] name **possibly missing some encodings*
 - [ ] opbd
 - [x] OS/2
-- [ ] PCLT
+- [x] PCLT
 - [x] post
 - [ ] prep
 - [ ] prop
