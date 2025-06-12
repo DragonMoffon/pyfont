@@ -203,10 +203,6 @@ class CFF2: ...  # TODO: CFF2
 
 
 @table
-class cmap: ...  # TODO: cmap
-
-
-@table
 class COLR: ...  # TODO: COLR
 
 
@@ -224,7 +220,30 @@ class cvt:
 
 
 @table
-class DSIG: ...  # TODO: DSIG
+class SignatureBlock_fmt1:
+    reserved1: uint16
+    reserved2: uint16
+    signatureLength: uint32
+    signature: tuple[int8, ...]
+
+
+type SignatureBlock = SignatureBlock_fmt1
+
+
+@table
+class SignatureRecord:
+    format: uint32
+    length: uint32
+    signatureBlockOffset: offset32
+
+
+@table
+class DSIG:
+    version: uint32
+    numSignatures: uint16
+    flags: uint16
+    signatureRecords: tuple[SignatureRecord, ...]
+    signatureBlocks: tuple[SignatureBlock, ...]
 
 
 @table

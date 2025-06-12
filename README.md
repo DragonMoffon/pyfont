@@ -108,7 +108,7 @@ Does not yet validate checksums or do any sort of file sanitiation.
 - [ ] CPAL
 - [ ] cvar
 - [x] cvt 
-- [ ] DSIG
+- [x] DSIG
 - [ ] EBDT
 - [ ] EBLC
 - [ ] EBSC
@@ -181,7 +181,7 @@ Does not yet validate checksums or do any sort of file sanitiation.
 - [ ] CPAL
 - [ ] cvar
 - [x] cvt 
-- [ ] DSIG
+- [x] DSIG
 - [ ] EBDT
 - [ ] EBLC
 - [ ] EBSC

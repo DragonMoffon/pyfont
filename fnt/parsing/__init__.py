@@ -42,6 +42,9 @@ from fnt.tables import (
     CPAL,
     cvar,
     cvt,
+    SignatureBlock_fmt1,
+    SignatureBlock,
+    SignatureRecord,
     DSIG,
     EBDT,
     EBLC,
@@ -391,7 +394,33 @@ def parse_cvt(font: Font, record: TableRecord) -> cvt:
     return cvt(tuple(font.get_FWORD_array(record.length // 2)))
 
 
-def parse_DSIG(font: Font, record: TableRecord) -> DSIG: ...  # TODO: DSIG
+def parse_SignatureBlock(
+    font: Font, offset: int, record: SignatureRecord
+) -> SignatureBlock:
+    font.seek(offset + record.signatureBlockOffset)
+    if record.format == 1:
+        r1, r2 = font.get_uint16(), font.get_uint16()
+        length = font.get_uint32()
+        signature = font.get_uint8_array(length)
+        return SignatureBlock_fmt1(r1, r2, length, signature)
+    raise ValueError(f"Invalid Signature Format ({record.format}).")
+
+
+def parse_DSIG(font: Font, record: TableRecord) -> DSIG:
+    font.seek(record.offset)
+    version = font.get_uint32()
+    count = font.get_uint16()
+    flags = font.get_uint16()
+    records = tuple(
+        SignatureRecord(font.get_uint32(), font.get_uint32(), font.get_offset32())
+        for _ in range(count)
+    )
+    blocks = tuple(
+        parse_SignatureBlock(font, record.offset, sig_record) for sig_record in records
+    )
+    return DSIG(version, count, flags, records, blocks)
+
+
 def parse_EBDT(font: Font, record: TableRecord) -> EBDT: ...  # TODO: EBDT
 def parse_EBLC(font: Font, record: TableRecord) -> EBLC: ...  # TODO: EBLC
 def parse_EBSC(font: Font, record: TableRecord) -> EBSC: ...  # TODO: EBSC
