@@ -25,7 +25,7 @@ Does not yet validate checksums or do any sort of file sanitiation.
 - [ ] bsln (baseline)
 - [ ] cmap (character code mapping)
 - [ ] cvar (CVT variation)
-- [ ] cvt (control value)
+- [x] cvt (control value)
 - [ ] EBSC (embedded bitmap scaling control)
 - [ ] fdsc (font descriptor)
 - [ ] feat (layout feature)
@@ -180,7 +180,7 @@ Does not yet validate checksums or do any sort of file sanitiation.
 - [ ] COLR
 - [ ] CPAL
 - [ ] cvar
-- [ ] cvt 
+- [x] cvt 
 - [ ] DSIG
 - [ ] EBDT
 - [ ] EBLC

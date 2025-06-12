@@ -8,16 +8,16 @@ from fnt.tables import (
     AxisValueMap,
     SegmentMaps,
     avar,
-    # ankr,
-    # BASE,
-    # bdat,
-    # bhed,
-    # bloc,
-    # bsln,
-    # CBDT,
-    # CBLC,
-    # CFF,
-    # CFF2,
+    ankr,
+    BASE,
+    bdat,
+    bhed,
+    bloc,
+    bsln,
+    CBDT,
+    CBLC,
+    CFF,
+    CFF2,
     cmap,
     cmapHeader,
     EncodingRecord,
@@ -38,54 +38,55 @@ from fnt.tables import (
     cmapSubtable_v12,
     cmapSubtable_v13,
     cmapSubtable_v14,
-    # COLR,
-    # CPAL,
-    # cvar,
-    # cvt,
-    # DSIG,
-    # EBDT,
-    # EBLC,
-    # EBSC,
-    # fdsc,
-    # feat,
-    # fmtx,
-    # fond,
-    # fpgm,
-    # fvar,
-    # gasp,
-    # GDEF,
-    # glyf,
-    # GPOS,
-    # GSUB,
-    # gvar,
-    # hdmx,
+    COLR,
+    CPAL,
+    cvar,
+    cvt,
+    DSIG,
+    EBDT,
+    EBLC,
+    EBSC,
+    fdsc,
+    feat,
+    fmtx,
+    fond,
+    fpgm,
+    fvar,
+    gasp,
+    GDEF,
+    glyf,
+    GPOS,
+    GSUB,
+    gvar,
+    hdmx,
     head,
     hhea,
     LongHorMetric,
     hmtx,
-    # HVAR,
-    # JSTF,
-    # just,
-    # kern,
-    # kerx,
-    # lcar,
-    # loca,
-    # ltag,
-    # LTSH,
-    # MATH,
+    HVAR,
+    JSTF,
+    just,
+    kern,
+    kerx,
+    lcar,
+    loca,
+    ltag,
+    LTSH,
+    MATH,
     maxp,
     maxp_v05,
     maxp_v10,
-    # MERG,
-    # meta,
-    # mort,
-    # morx,
-    # MVAR,
+    MERG,
+    meta,
+    mort,
+    morx,
+    MVAR,
     name,
     NameRecord,
     LangTagRecord,
     name_v0,
     name_v1,
+    opbd,
     OS2,
     OS2_v0,
     OS2_v1,
@@ -96,19 +97,19 @@ from fnt.tables import (
     post_v1,
     post_v2,
     post_v25,
-    # prep,
-    # prop,
-    # sbix,
-    # STAT,
-    # SVG,
-    # trak,
-    # VDMX,
-    # vhea,
-    # vmtx,
-    # VORG,
-    # VVAR,
-    # xref,
-    # Zapf,
+    prep,
+    prop,
+    sbix,
+    STAT,
+    SVG,
+    trak,
+    VDMX,
+    vhea,
+    vmtx,
+    VORG,
+    VVAR,
+    xref,
+    Zapf,
 )
 from fnt.flags import Platform, WindowsEncoding, MacintoshEncoding
 
@@ -145,12 +146,8 @@ def parse_table_directory(font: Font, offset: int = 0) -> TableDirectory:
 # -- FONT TABLES --
 
 
-# TODO: acnt
-def parse_acnt(font: Font, record: TableRecord) -> acnt:
-    pass
-
-
-# TODO: ankr
+def parse_acnt(font: Font, record: TableRecord) -> acnt: ...  # TODO: acnt
+def parse_ankr(font: Font, record: TableRecord) -> ankr: ...  # TODO: ankr
 
 
 def parse_SegmentMaps(font: Font) -> SegmentMaps:
@@ -178,15 +175,15 @@ def parse_avar(font: Font, record: TableRecord) -> avar:
     )
 
 
-# TODO: BASE
-# TODO: bdat
-# TODO: bhed
-# TODO: bloc
-# TODO: bsln
-# TODO: CBDT
-# TODO: CBLC
-# TODO: CFF
-# TODO: CFF2
+def parse_BASE(font: Font, record: TableRecord) -> BASE: ...  # TODO: BASE
+def parse_bdat(font: Font, record: TableRecord) -> bdat: ...  # TODO: bdat
+def parse_bhed(font: Font, record: TableRecord) -> bhed: ...  # TODO: bhed
+def parse_bloc(font: Font, record: TableRecord) -> bloc: ...  # TODO: bloc
+def parse_bsln(font: Font, record: TableRecord) -> bsln: ...  # TODO: bsln
+def parse_CBDT(font: Font, record: TableRecord) -> CBDT: ...  # TODO: CBDT
+def parse_CBLC(font: Font, record: TableRecord) -> CBLC: ...  # TODO: CBLC
+def parse_CFF(font: Font, record: TableRecord) -> CFF: ...  # TODO: CFF
+def parse_CFF2(font: Font, record: TableRecord) -> CFF2: ...  # TODO: CFF2
 
 
 def parse_map_group(font: Font):
@@ -384,27 +381,33 @@ def parse_cmap(font: Font, record: TableRecord) -> cmap:
     )
 
 
-# TODO: COLR
-# TODO: CPAL
-# TODO: cvar
-# TODO: cvt
-# TODO: DSIG
-# TODO: EBDT
-# TODO: EBLC
-# TODO: EBSC
-# TODO: fdsc
-# TODO: feat
-# TODO: fmtx
-# TODO: fond
-# TODO: fpgm
-# TODO: fvar
-# TODO: gasp
-# TODO: GDEF
-# TODO: glyf
-# TODO: GPOS
-# TODO: GSUB
-# TODO: gvar
-# TODO: hdmx
+def parse_COLR(font: Font, record: TableRecord) -> COLR: ...  # TODO: COLR
+def parse_CPAL(font: Font, record: TableRecord) -> CPAL: ...  # TODO: CPAL
+def parse_cvar(font: Font, record: TableRecord) -> cvar: ...  # TODO: cvar
+
+
+def parse_cvt(font: Font, record: TableRecord) -> cvt:
+    font.seek(record.offset)
+    return cvt(tuple(font.get_FWORD_array(record.length // 2)))
+
+
+def parse_DSIG(font: Font, record: TableRecord) -> DSIG: ...  # TODO: DSIG
+def parse_EBDT(font: Font, record: TableRecord) -> EBDT: ...  # TODO: EBDT
+def parse_EBLC(font: Font, record: TableRecord) -> EBLC: ...  # TODO: EBLC
+def parse_EBSC(font: Font, record: TableRecord) -> EBSC: ...  # TODO: EBSC
+def parse_fdsc(font: Font, record: TableRecord) -> fdsc: ...  # TODO: fdsc
+def parse_feat(font: Font, record: TableRecord) -> feat: ...  # TODO: feat
+def parse_fmtx(font: Font, record: TableRecord) -> fmtx: ...  # TODO: fmtx
+def parse_fond(font: Font, record: TableRecord) -> fond: ...  # TODO: fond
+def parse_fpgm(font: Font, record: TableRecord) -> fpgm: ...  # TODO: fpgm
+def parse_fvar(font: Font, record: TableRecord) -> fvar: ...  # TODO: fvar
+def parse_gasp(font: Font, record: TableRecord) -> gasp: ...  # TODO: gasp
+def parse_GDEF(font: Font, record: TableRecord) -> GDEF: ...  # TODO: GDEF
+def parse_glyf(font: Font, record: TableRecord) -> glyf: ...  # TODO: glyf
+def parse_GPOS(font: Font, record: TableRecord) -> GPOS: ...  # TODO: GPOS
+def parse_GSUB(font: Font, record: TableRecord) -> GSUB: ...  # TODO: GSUB
+def parse_gvar(font: Font, record: TableRecord) -> gvar: ...  # TODO: gvar
+def parse_hdmx(font: Font, record: TableRecord) -> hdmx: ...  # TODO: hdmx
 
 
 def parse_head(font: Font, record: TableRecord) -> head:
@@ -467,16 +470,16 @@ def parse_hmtx(font: Font, record: TableRecord) -> hmtx:
     return hmtx(metrics, side_beaings)
 
 
-# TODO: HVAR
-# TODO: JSTF
-# TODO: just
-# TODO: kern
-# TODO: kerx
-# TODO: lcar
-# TODO: loca
-# TODO: ltag
-# TODO: LTSH
-# TODO: MATH
+def parse_HVAR(font: Font, record: TableRecord) -> HVAR: ...  # TODO: HVAR
+def parse_JSTF(font: Font, record: TableRecord) -> JSTF: ...  # TODO: JSTF
+def parse_just(font: Font, record: TableRecord) -> just: ...  # TODO: just
+def parse_kern(font: Font, record: TableRecord) -> kern: ...  # TODO: kern
+def parse_kerx(font: Font, record: TableRecord) -> kerx: ...  # TODO: kerx
+def parse_lcar(font: Font, record: TableRecord) -> lcar: ...  # TODO: lcar
+def parse_loca(font: Font, record: TableRecord) -> loca: ...  # TODO: loca
+def parse_ltag(font: Font, record: TableRecord) -> ltag: ...  # TODO: ltag
+def parse_LTSH(font: Font, record: TableRecord) -> LTSH: ...  # TODO: LTSH
+def parse_MATH(font: Font, record: TableRecord) -> MATH: ...  # TODO: MATH
 
 
 def parse_maxp(font: Font, record: TableRecord) -> maxp:
@@ -504,11 +507,11 @@ def parse_maxp(font: Font, record: TableRecord) -> maxp:
     )
 
 
-# TODO: MERG
-# TODO: meta
-# TODO: mort
-# TODO: morx
-# TODO: MVAR
+def parse_MERG(font: Font, record: TableRecord) -> MERG: ...  # TODO: MERG
+def parse_meta(font: Font, record: TableRecord) -> meta: ...  # TODO: meta
+def parse_mort(font: Font, record: TableRecord) -> mort: ...  # TODO: mort
+def parse_morx(font: Font, record: TableRecord) -> morx: ...  # TODO: morx
+def parse_MVAR(font: Font, record: TableRecord) -> MVAR: ...  # TODO: MVAR
 
 
 def parse_name(font: Font, record: TableRecord) -> name:
@@ -564,7 +567,7 @@ def parse_name(font: Font, record: TableRecord) -> name:
     return name_v1(version, count, offset, records, lang_tag_count, lang_tags)
 
 
-# TODO: opbd
+def parse_opbd(font: Font, record: TableRecord) -> opbd: ...  # TODO: opbd
 
 
 def parse_OS2(font: Font, record: TableRecord) -> OS2:
@@ -835,32 +838,93 @@ def parse_post(font: Font, record: TableRecord) -> post:
     )
 
 
-# TODO: prep
-# TODO: prop
-# TODO: sbix
-# TODO: STAT
-# TODO: SVG
-# TODO: trak
-# TODO: VDMX
-# TODO: vhea
-# TODO: vmtx
-# TODO: VORG
-# TODO: VVAR
-# TODO: xref
-# TODO: Zapf
+def parse_prep(font: Font, record: TableRecord) -> prep: ...  # TODO: prep
+def parse_prop(font: Font, record: TableRecord) -> prop: ...  # TODO: prop
+def parse_sbix(font: Font, record: TableRecord) -> sbix: ...  # TODO: sbix
+def parse_STAT(font: Font, record: TableRecord) -> STAT: ...  # TODO: STAT
+def parse_SVG(font: Font, record: TableRecord) -> SVG: ...  # TODO: SVG
+def parse_trak(font: Font, record: TableRecord) -> trak: ...  # TODO: trak
+def parse_VDMX(font: Font, record: TableRecord) -> VDMX: ...  # TODO: VDMX
+def parse_vhea(font: Font, record: TableRecord) -> vhea: ...  # TODO: vhea
+def parse_vmtx(font: Font, record: TableRecord) -> vmtx: ...  # TODO: vmtx
+def parse_VORG(font: Font, record: TableRecord) -> VORG: ...  # TODO: VORG
+def parse_VVAR(font: Font, record: TableRecord) -> VVAR: ...  # TODO: VVAR
+def parse_xref(font: Font, record: TableRecord) -> xref: ...  # TODO: xref
+def parse_Zapf(font: Font, record: TableRecord) -> Zapf: ...  # TODO: Zapf
 
 
 parsers: dict[str, ParseMethod] = {
+    "acnt": parse_acnt,
+    "ankr": parse_ankr,
     "avar": parse_avar,
+    "BASE": parse_BASE,
+    "bdat": parse_bdat,
+    "bhed": parse_bhed,
+    "bloc": parse_bloc,
+    "bsln": parse_bsln,
+    "CBDT": parse_CBDT,
+    "CBLC": parse_CBLC,
+    "CFF": parse_CFF,
+    "CFF2": parse_CFF2,
     "cmap": parse_cmap,
+    "COLR": parse_COLR,
+    "CPAL": parse_CPAL,
+    "cvar": parse_cvar,
+    "cvt ": parse_cvt,
+    "DSIG": parse_DSIG,
+    "EBDT": parse_EBDT,
+    "EBLC": parse_EBLC,
+    "EBSC": parse_EBSC,
+    "fdsc": parse_fdsc,
+    "feat": parse_feat,
+    "fmtx": parse_fmtx,
+    "fond": parse_fond,
+    "fpgm": parse_fpgm,
+    "fvar": parse_fvar,
+    "gasp": parse_gasp,
+    "GDEF": parse_GDEF,
+    "glyf": parse_glyf,
+    "GPOS": parse_GPOS,
+    "GSUB": parse_GSUB,
+    "gvar": parse_gvar,
+    "hdmx": parse_hdmx,
     "head": parse_head,
     "hhea": parse_hhea,
-    "maxp": parse_maxp,
     "hmtx": parse_hmtx,
+    "HVAR": parse_HVAR,
+    "JSTF": parse_JSTF,
+    "just": parse_just,
+    "kern": parse_kern,
+    "kerx": parse_kerx,
+    "lcar": parse_lcar,
+    "loca": parse_loca,
+    "ltag": parse_ltag,
+    "LTSH": parse_LTSH,
+    "MATH": parse_MATH,
+    "maxp": parse_maxp,
+    "MERG": parse_MERG,
+    "meta": parse_meta,
+    "mort": parse_mort,
+    "morx": parse_morx,
+    "MVAR": parse_MVAR,
     "name": parse_name,
-    "OS/2": parse_OS2,
-    "post": parse_post,
+    "opbd": parse_opbd,
+    "OS2": parse_OS2,
     "PCLT": parse_PCLT,
+    "post": parse_post,
+    "prep": parse_prep,
+    "prop": parse_prop,
+    "sbix": parse_sbix,
+    "STAT": parse_STAT,
+    "SVG": parse_SVG,
+    "trak": parse_trak,
+    "VDMX": parse_VDMX,
+    "vhea": parse_vhea,
+    "vmtx": parse_vmtx,
+    "VORG": parse_VORG,
+    "VVAR": parse_VVAR,
+    "xref": parse_xref,
+    "Zapf": parse_Zapf,
 }
 
 __all__ = ("ParseMethod", "parse_table_directory", "parsers")

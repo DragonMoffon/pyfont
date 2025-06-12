@@ -166,19 +166,56 @@ class avar:
     segmentMaps: tuple[SegmentMaps, ...]
 
 
-# TODO: BASE
-# TODO: bdat
-# TODO: bhed
-# TODO: bloc
-# TODO: bsln
-# TODO: CBDT
-# TODO: CBLC
-# TODO: CFF
-# TODO: CFF2
-# TODO: cmap
-# TODO: COLR
-# TODO: CPAL
-# TODO: cvar
+@table
+class BASE: ...  # TODO: BASE
+
+
+@table
+class bdat: ...  # TODO: bdat
+
+
+@table
+class bhed: ...  # TODO: bhed
+
+
+@table
+class bloc: ...  # TODO: bloc
+
+
+@table
+class bsln: ...  # TODO: bsln
+
+
+@table
+class CBDT: ...  # TODO: CBDT
+
+
+@table
+class CBLC: ...  # TODO: CBLC
+
+
+@table
+class CFF: ...  # TODO: CFF
+
+
+@table
+class CFF2: ...  # TODO: CFF2
+
+
+@table
+class cmap: ...  # TODO: cmap
+
+
+@table
+class COLR: ...  # TODO: COLR
+
+
+@table
+class CPAL: ...  # TODO: CPAL
+
+
+@table
+class cvar: ...  # TODO: cvar
 
 
 @table
@@ -186,14 +223,36 @@ class cvt:
     program: tuple[FWORD]
 
 
-# TODO: DSIG
-# TODO: EBDT
-# TODO: EBLC
-# TODO: EBSC
-# TODO: fdsc
-# TODO: feat
-# TODO: fmtx
-# TODO: fond
+@table
+class DSIG: ...  # TODO: DSIG
+
+
+@table
+class EBDT: ...  # TODO: EBDT
+
+
+@table
+class EBLC: ...  # TODO: EBLC
+
+
+@table
+class EBSC: ...  # TODO: EBSC
+
+
+@table
+class fdsc: ...  # TODO: fdsc
+
+
+@table
+class feat: ...  # TODO: feat
+
+
+@table
+class fmtx: ...  # TODO: fmtx
+
+
+@table
+class fond: ...  # TODO: fond
 
 
 @table
@@ -201,7 +260,8 @@ class fpgm:
     program: tuple[uint8, ...]
 
 
-# TODO: fvar
+@table
+class fvar: ...  # TODO: fvar
 
 
 @table
@@ -217,7 +277,8 @@ class gasp:
     gaspRanges: tuple[gaspRange, ...]
 
 
-# TODO: GDEF
+@table
+class GDEF: ...  # TODO: GDEF
 
 
 @table
@@ -278,10 +339,20 @@ class glyf:
     glyphs: tuple[glyfGlyph, ...]
 
 
-# TODO: GPOS
-# TODO: GSUB
-# TODO: gvar
-# TODO: hdmx
+@table
+class GPOS: ...  # TODO: GPOS
+
+
+@table
+class GSUB: ...  # TODO: GSUB
+
+
+@table
+class gvar: ...  # TODO: gvar
+
+
+@table
+class hdmx: ...  # TODO: hdmx
 
 
 @table
@@ -337,12 +408,28 @@ class hmtx:
     leftSideBearings: tuple[FWORD, ...]
 
 
-# TODO: HVAR
-# TODO: JSTF
-# TODO: just
-# TODO: kern
-# TODO: kerx
-# TODO: lcar
+@table
+class HVAR: ...  # TODO: HVAR
+
+
+@table
+class JSTF: ...  # TODO: JSTF
+
+
+@table
+class just: ...  # TODO: just
+
+
+@table
+class kern: ...  # TODO: kern
+
+
+@table
+class kerx: ...  # TODO: kerx
+
+
+@table
+class lcar: ...  # TODO: lcar
 
 
 @table
@@ -350,9 +437,16 @@ class loca:
     offsets: tuple[offset16 | offset32, ...]
 
 
-# TODO: ltag
-# TODO: LTSH
-# TODO: MATH
+@table
+class ltag: ...  # TODO: ltag
+
+
+@table
+class LTSH: ...  # TODO: LTSH
+
+
+@table
+class MATH: ...  # TODO: MATH
 
 
 @table
@@ -382,11 +476,25 @@ class maxp_v10:
 
 type maxp = maxp_v05 | maxp_v10
 
-# TODO: MERG
-# TODO: meta
-# TODO: mort
-# TODO: morx
-# TODO: MVAR
+
+@table
+class MERG: ...  # TODO: MERG
+
+
+@table
+class meta: ...  # TODO: meta
+
+
+@table
+class mort: ...  # TODO: mort
+
+
+@table
+class morx: ...  # TODO: morx
+
+
+@table
+class MVAR: ...  # TODO: MVAR
 
 
 @table
@@ -427,7 +535,9 @@ class name_v1:
 
 type name = name_v0 | name_v1
 
-# TODO: opbd
+
+@table
+class opbd: ...  # TODO: opbd
 
 
 @table
@@ -492,11 +602,8 @@ class OS2_v5(OS2_v2):
 type OS2 = OS2_v0 | OS2_v1 | OS2_v2 | OS2_v3 | OS2_v4 | OS2_v4
 
 
-# TODO: PCLT unique types and functions for fetching them.
-
-
 @table
-class PCLT:
+class PCLT:  # TODO: PCLT unique types and functions for fetching them.
     majorVersion: uint16
     minorVersion: uint16
     fontNumber: uint32
@@ -552,7 +659,12 @@ class prep:
     program: tuple[uint8, ...]
 
 
-# TODO: prop
+@table
+class prop: ...  # TODO: prop
+
+
+@table
+class STAT: ...  # TODO: STAT
 
 
 @table
@@ -607,16 +719,36 @@ class sbix:
     glyphs: tuple[sbixGlyph, ...]
 
 
-# TODO: STAT
-# TODO: SVG
-# TODO: trak
-# TODO: VDMX
-# TODO: vhea
-# TODO: vmtx
-# TODO: VORG
-# TODO: VVAR
-# TODO: xref
-# TODO: Zapf
+@table
+class trak: ...  # TODO: trak
+
+
+@table
+class VDMX: ...  # TODO: VDMX
+
+
+@table
+class vhea: ...  # TODO: vhea
+
+
+@table
+class vmtx: ...  # TODO: vmtx
+
+
+@table
+class VORG: ...  # TODO: VORG
+
+
+@table
+class VVAR: ...  # TODO: VVAR
+
+
+@table
+class xref: ...  # TODO: xref
+
+
+@table
+class Zapf: ...  # TODO: Zapf
 
 
 type Table = (
@@ -625,22 +757,74 @@ type Table = (
     | acnt
     | ankr
     | avar
+    | BASE
+    | bdat
+    | bhed
+    | bloc
+    | bsln
+    | CBDT
+    | CBLC
+    | CFF
+    | CFF2
     | cmap
+    | COLR
+    | CPAL
+    | cvar
+    | cvt
+    | DSIG
+    | EBDT
+    | EBLC
+    | EBSC
+    | fdsc
+    | feat
+    | fmtx
+    | fond
+    | fpgm
+    | fvar
+    | gasp
+    | GDEF
     | glyf
+    | GPOS
+    | GSUB
+    | gvar
+    | hdmx
     | head
     | hhea
     | hmtx
+    | HVAR
+    | JSTF
+    | just
+    | kern
+    | kerx
+    | lcar
     | loca
+    | ltag
+    | LTSH
+    | MATH
     | maxp
+    | MERG
+    | meta
+    | mort
+    | morx
+    | MVAR
     | name
-    | post
+    | opbd
     | OS2
-    | cvt
-    | fpgm
+    | PCLT
+    | post
     | prep
-    | gasp
-    | SVG
+    | prop
     | sbix
+    | STAT
+    | SVG
+    | trak
+    | VDMX
+    | vhea
+    | vmtx
+    | VORG
+    | VVAR
+    | xref
+    | Zapf
 )
 
 __all__ = (
