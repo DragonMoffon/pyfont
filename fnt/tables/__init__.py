@@ -16,6 +16,27 @@ from fnt.types import (
     version16dot16,
 )
 
+# fmt: off
+from .BASE import (
+    BASE,
+    BaseHeader_fmt1,
+    BaseHeader_fmt11,
+    BaseHeader,
+    Axis,
+    BaseTagList,
+    BaseScriptRecord,
+    BaseScriptList,
+    BaseLangSys,
+    BaseScript,
+    BaseValues,
+    FeatMinMax,
+    MinMax,
+    BaseCoord_fmt1,
+    BaseCoord_fmt2,
+    BaseCoord_fmt3,
+    BaseCoord
+)
+
 from .cmap import (
     cmap,
     EncodingRecord,
@@ -38,6 +59,7 @@ from .cmap import (
     NonDefaultUVS,
     cmapSubtable_v14,
 )
+# fmt: on
 
 # -- TOP LEVEL TABLES --
 
@@ -115,9 +137,8 @@ class acnt_secondary_data:
     secondaryGlyphAttachmentNumber: uint8
 
 
-# TODO: acnt - Unsure if these are correct table types
 @table
-class acnt:
+class acnt:  # TODO: acnt - Unsure if these are correct table types
     version: F2DOT14
     firstAccentedGlyphIndex: uint16
     lastAccentedGlyphIndex: uint16
@@ -164,10 +185,6 @@ class avar:
     reserved: uint16
     axisCount: uint16
     segmentMaps: tuple[SegmentMaps, ...]
-
-
-@table
-class BASE: ...  # TODO: BASE
 
 
 @table
@@ -846,13 +863,41 @@ type Table = (
     | Zapf
 )
 
+# fmt: off
 __all__ = (
     "Table",
     "TTCHeader",
     "TTCHeader_v1",
     "TTCHeader_v2",
-    "TableDirectory",
     "TableRecord",
+    "acnt",
+    "ankr",
+    "avar",
+    "BASE",
+    "BaseHeader_fmt1",
+    "BaseHeader_fmt11",
+    "BaseHeader",
+    "Axis",
+    "BaseTagList",
+    "BaseScriptRecord",
+    "BaseScriptList",
+    "BaseLangSys",
+    "BaseScript",
+    "BaseValues",
+    "FeatMinMax",
+    "MinMax",
+    "BaseCoord_fmt1",
+    "BaseCoord_fmt2",
+    "BaseCoord_fmt3",
+    "BaseCoord",
+    "bdat",
+    "bhed",
+    "bloc",
+    "bsln",
+    "CBDT",
+    "CBLC",
+    "CFF",
+    "CFF2",
     "cmap",
     "EncodingRecord",
     "cmapHeader",
@@ -873,39 +918,84 @@ __all__ = (
     "UVSMapping",
     "NonDefaultUVS",
     "cmapSubtable_v14",
+    "COLR",
+    "CPAL",
+    "cvar",
+    "cvt",
+    "DSIG",
+    "EBDT",
+    "EBLC",
+    "EBSC",
+    "fdsc",
+    "feat",
+    "fmtx",
+    "fond",
+    "fpgm",
+    "fvar",
+    "gasp",
+    "gaspRange",
+    "GDEF",
+    "glyf",
+    "glyfGlyph",
+    "SimpleGlyph",
+    "CompositeGlyphDescription",
+    "CompositeGlyph",
+    "GPOS",
+    "GSUB",
+    "gvar",
+    "hdmx",
     "head",
     "hhea",
     "hmtx",
+    "HVAR",
+    "JSTF",
+    "just",
+    "kern",
+    "kerx",
+    "lcar",
+    "loca",
+    "ltag",
+    "LTSH",
+    "MATH",
     "maxp",
     "maxp_v05",
     "maxp_v10",
+    "MERG",
+    "meta",
+    "mort",
+    "morx",
+    "MVAR",
     "name",
     "name_v0",
     "name_v1",
+    "opbd",
     "OS2",
     "OS2_v1",
     "OS2_v2",
     "OS2_v3",
     "OS2_v4",
     "OS2_v5",
+    "PCLT",
     "post",
     "post_v2",
     "post_v25",
-    "cvt",
-    "fpgm",
     "prep",
-    "gaspRange",
-    "gasp",
-    "glyf",
-    "glyfGlyph",
-    "SimpleGlyph",
-    "CompositeGlyphDescription",
-    "CompositeGlyph",
-    "SVG",
-    "SVGDocumentRecord",
-    "SVGDocumentList",
+    "prop",
     "sbix",
     "sbixHeader",
     "Strike",
     "sbixGlyph",
+    "STAT",
+    "SVG",
+    "SVGDocumentRecord",
+    "SVGDocumentList",
+    "trak",
+    "VDMX",
+    "vhea",
+    "vmtx",
+    "VORG",
+    "VVAR",
+    "xref",
+    "Zapf",
 )
+# fmt: on

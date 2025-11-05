@@ -10,6 +10,22 @@ from fnt.tables import (
     avar,
     ankr,
     BASE,
+    BaseHeader_fmt1,
+    BaseHeader_fmt11,
+    BaseHeader,
+    Axis,
+    BaseTagList,
+    BaseScriptRecord,
+    BaseScriptList,
+    BaseLangSys,
+    BaseScript,
+    BaseValues,
+    FeatMinMax,
+    MinMax,
+    BaseCoord_fmt1,
+    BaseCoord_fmt2,
+    BaseCoord_fmt3,
+    BaseCoord,
     bdat,
     bhed,
     bloc,
@@ -178,7 +194,46 @@ def parse_avar(font: Font, record: TableRecord) -> avar:
     )
 
 
-def parse_BASE(font: Font, record: TableRecord) -> BASE: ...  # TODO: BASE
+def parse_Axis(font: Font, offset: int) -> Axis:
+    font.seek(offset)
+    base_tag_offset = font.get_offset16()
+    base_script_offset = font.get_offset16()
+
+    base_tags = None
+    if base_tag_offset:
+        font.seek(offset + base_tag_offset)
+        count = font.get_uint16()
+        base_tags = BaseTagList(count, font.get_tag_array(count))
+
+    return Axis(base_tag_offset, base_script_offset, base_tags, None)
+
+
+def parse_BASE(font: Font, record: TableRecord) -> BASE:  # TODO: BASE
+    font.seek(record.offset)
+    # parse header
+    major = font.get_uint16()
+    minor = font.get_uint16()
+    horiz_offset = font.get_offset16()
+    vert_offset = font.get_offset16()
+    item_var_store = None
+    if major == 1 and minor == 1:
+        item_var_store = font.get_offset32()
+        header = BaseHeader_fmt11(
+            major, minor, horiz_offset, vert_offset, item_var_store
+        )
+    else:
+        header = BaseHeader_fmt1(major, minor, horiz_offset, vert_offset)
+
+    horiz_axis = None
+    if horiz_offset:
+        horiz_axis = parse_Axis(font, record.offset + horiz_offset)
+    vert_axis = None
+    if vert_offset:
+        vert_axis = parse_Axis(font, record.offset + vert_offset)
+
+    return BASE(header, horiz_axis, vert_axis, None)
+
+
 def parse_bdat(font: Font, record: TableRecord) -> bdat: ...  # TODO: bdat
 def parse_bhed(font: Font, record: TableRecord) -> bhed: ...  # TODO: bhed
 def parse_bloc(font: Font, record: TableRecord) -> bloc: ...  # TODO: bloc
