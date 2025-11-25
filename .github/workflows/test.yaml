@@ -1,0 +1,50 @@
+# IMPORTANT: Some top-level values might not have access to templating?
+# See the following page for more info:
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+name: Tests
+# Might only have access to github and inputs contexts? Also, some values aren't
+# set until later actions / phases of the build (i.e. github.head_ref). See:
+# https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
+run-name: Unit tests for ${{ github.head_ref }}
+
+
+on: [ push, pull_request ]
+
+
+jobs:
+
+  test:
+    # Although many fields support templating matrix values, they may
+    # limit what can be templated & when. To avoid pain and confusion:
+    # 1. Always double-check the doc for a field before templating
+    # 2. Avoid forward referencing whenever possible
+    strategy:
+      matrix:
+        python-version: ["3.13", "3.14"] 
+        architecture: ['x64']
+        os: [ 'ubuntu-latest' ]
+
+    # Placed after the matrix block to avoid forward reference confusion
+    runs-on: ${{ matrix.os }}
+    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.architecture }}
+
+      - name: Environment update
+        run: |
+          python -m pip install --upgrade pip wheel setuptools
+
+      - name: Install package
+        run: |
+          python -m pip install -Ie .[dev]
+
+      - name: Test with pytest
+        run: |
+          python -m pytest

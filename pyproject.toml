@@ -27,7 +27,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest~=9",
+    "pytest~=9.0.0",
     "flake8==6.0.0",
     "mypy==1.14.1",
     "pylint==3.2.7",

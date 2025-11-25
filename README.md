@@ -1,15 +1,75 @@
 # PYFONT
-A pure python library for loading TTF and OTF font's. Does not provide methods for writing to font files. The basic Font, and Collection objects do no work to process the fonts. Current only satisfies the 1.19.1 specification.
 
-All of the table defintions and parsing is based on either the [Microsoft Spec](https://learn.microsoft.com/en-us/typography/opentype/spec/otff) or [Apple's True Type Reference Manual](https://developer.apple.com/fonts/TrueType-Reference-Manual/). If there is a conflict between the two it will refer to the microsoft definition.
+ <!-- Th PRs welcome button links GitHub doc b/c the original makeapullrequest.com's gone. -->
+ [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) [![Tests (main)](https://github.com/DragonMoffon/pyfont/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/DragonMoffon/pyfont/actions/workflows/test.yaml?branch=main)
 
-The font's found within the test folder should all be licensed correctly, however, that does not mean they are free for distribution, and will not be included in the pypi release. If you have other fonts that cover more niche tables defined, and have the licence to use them in an open source project please make a PR.
+A zero-dependency Python-only library for reading TTF and OTF fonts.
+
+> [!IMPORTANT]
+> This project only supports reading fonts!
+> To write font data, you will need a different libary.
+
+Support for [woff][] and woff2 is a possibility in the future.
+
+[woff]: https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Fonts/WOFF
+
+
+## Features
+
+The basic Font, and Collection objects:
+
+- do no work to process the fonts
+- partly implement v1.9.1 of [The Microsoft OpenType Specification][]
+
+
+### Goals
+
+Table definitions and parsing aim to implement the
+following documents:
+
+1. [The Microsoft OpenType Specification][]
+2. [The Apple TrueType Reference Manual][]
+
+In the event of a conflict, the OpenType (OTF) specification
+takes precedence. Lists of planned and finished OTF tables
+tables are located in the [TABLE PROGRESS](#table-progress)
+section below.
+
+[The Microsoft OpenType Specification]: https://learn.microsoft.com/en-us/typography/opentype/spec/otf
+[The Apple TrueType Reference Manual]: https://developer.apple.com/fonts/TrueType-Reference-Manual/
+
+
+## Contributing
+
+## First-Time Setup
+
+Make sure you have Python 3.13 or higher installed, then:
+1. Fork and clone the repo
+2. Create and activate a virtual environment
+3. `pip install --upgrade setuptools`
+4. `pip install -I -e .[dev]`
+5. If install succeeds, run `python -m pytest`
+
+Tests should pass. If something goes wrong, please [file an issue][].
+
+
+## Project Structure
+
+### Test Fonts
+
+The test fonts in the [`fonts/`](fonts/) folder should be
+attributed in accordance with their licenses. They:
+
+- are intended for testing only
+- will **never** be included in any PyPI releases
+
+If a font is improperly licensed, please either [file an issue][]
+or [open a pull request][].
 
 Does not yet validate checksums or do any sort of file sanitiation. 
 
-### Web Open Font Format
-
-Support for woff and woff2 is a possibility in the future
+[file an issue]: https://github.com/DragonMoffon/pyfont/issues/new
+[open a pull request]: https://github.com/DragonMoffon/pyfont/pulls/compare
 
 ### TABLE PROGRESS
 
