@@ -1,4 +1,5 @@
 from fnt.types import (
+    offset16_from_bytes,
     table,
     uint8,
     int8,
@@ -297,7 +298,38 @@ class fpgm:
 
 
 @table
-class fvar: ...  # TODO: fvar
+class fvarHeader:
+    majorVersion: uint16 # 1
+    minorVersion: uint16 # 0
+    axesArrayOffset: offset16
+    reserved: uint16 # set to 2
+    axisCount: uint16
+    axisSize: uint16 # set to 0x0014 (20)
+    instanceCount: uint16
+    instanceSize: uint16 # either axisCount * sizeof(fixed) + 6 or axisCount * sizeof(fixed) + 4
+
+@table
+class VariationAxisRecord:
+    axisTag: tag
+    minValue: fixed
+    defaultValue: fixed
+    maxValue: fixed
+    flags: uint16 # 0x0001 for hidden 0x0002 -> 0xFFFE are reserved
+    axisNameID: uint16
+
+@table
+class InstanceRecord:
+    subfamilyNameID: uint16 
+    flags: uint16 # set to 0
+    coordinates: tuple[fixed, ...]
+    postScriptNameID: uint16 = None # optional (based on instanceSize) # type: ignore
+
+
+@table
+class fvar:
+    header: fvarHeader
+    axes: tuple[VariationAxisRecord, ...]
+    instances: tuple[InstanceRecord, ...]
 
 
 @table
@@ -932,6 +964,9 @@ __all__ = (
     "fond",
     "fpgm",
     "fvar",
+    "fvarHeader",
+    "VariationAxisRecord",
+    "InstanceRecord",
     "gasp",
     "gaspRange",
     "GDEF",

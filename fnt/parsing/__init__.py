@@ -71,6 +71,9 @@ from fnt.tables import (
     fond,
     fpgm,
     fvar,
+    fvarHeader,
+    VariationAxisRecord,
+    InstanceRecord,
     gasp,
     GDEF,
     glyf,
@@ -483,8 +486,53 @@ def parse_fdsc(font: Font, record: TableRecord) -> fdsc: ...  # TODO: fdsc
 def parse_feat(font: Font, record: TableRecord) -> feat: ...  # TODO: feat
 def parse_fmtx(font: Font, record: TableRecord) -> fmtx: ...  # TODO: fmtx
 def parse_fond(font: Font, record: TableRecord) -> fond: ...  # TODO: fond
-def parse_fpgm(font: Font, record: TableRecord) -> fpgm: ...  # TODO: fpgm
-def parse_fvar(font: Font, record: TableRecord) -> fvar: ...  # TODO: fvar
+
+
+def parse_fpgm(font: Font, record: TableRecord) -> fpgm:
+    font.seek(record.offset)
+    return fpgm(font.get_uint8_array(record.length))
+
+
+def parse_fvar(font: Font, record: TableRecord) -> fvar:
+    font.seek(record.offset)
+    header = fvarHeader(
+        font.get_uint16(),
+        font.get_uint16(),
+        font.get_offset16(),
+        font.get_uint16(),
+        font.get_uint16(),
+        font.get_uint16(),
+        font.get_uint16(),
+        font.get_uint16(),
+    ) 
+    
+    font.seek(record.offset + header.axesArrayOffset)
+    axes = tuple(
+        VariationAxisRecord(
+            font.get_tag(),
+            font.get_fixed(),
+            font.get_fixed(),
+            font.get_fixed(),
+            font.get_uint16(),
+            font.get_uint16()
+        )
+        for _ in range(header.axisCount)
+    )
+
+    include_postscript = header.instanceSize == (header.axisCount * 4 + 6)
+    instances = tuple(
+        InstanceRecord(
+            font.get_uint16(),
+            font.get_uint16(),
+            font.get_fixed_array(header.axisCount),
+            None if not include_postscript else font.get_uint16(),
+        )
+        for _ in range(header.instanceCount)
+    )
+
+    return fvar(header, axes, instances)
+
+
 def parse_gasp(font: Font, record: TableRecord) -> gasp: ...  # TODO: gasp
 def parse_GDEF(font: Font, record: TableRecord) -> GDEF: ...  # TODO: GDEF
 def parse_glyf(font: Font, record: TableRecord) -> glyf: ...  # TODO: glyf

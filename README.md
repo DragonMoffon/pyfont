@@ -35,8 +35,8 @@ Support for woff and woff2 is a possibility in the future
 - [ ] feat (layout feature)
 - [ ] fmtx (font metrics)
 - [ ] fond (font family compatibility)
-- [ ] fpgm (font program)
-- [ ] fvar (font variation)
+- [x] fpgm (font program)
+- [x] fvar (font variation)
 - [ ] gasp (grid-fitting and scan-conversion procedure)
 - [ ] glyf (glyph outline)
 - [ ] gvar (glyph variation)
@@ -121,7 +121,7 @@ Support for woff and woff2 is a possibility in the future
 - [ ] fmtx
 - [ ] fond
 - [x] fpgm
-- [ ] fvar
+- [x] fvar
 - [x] gasp
 - [ ] GDEF
 - [x] glyf
@@ -193,8 +193,8 @@ Support for woff and woff2 is a possibility in the future
 - [ ] feat
 - [ ] fmtx
 - [ ] fond
-- [ ] fpgm
-- [ ] fvar
+- [x] fpgm
+- [x] fvar
 - [ ] gasp
 - [ ] GDEF
 - [ ] glyf
