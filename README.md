@@ -7,6 +7,10 @@ The font's found within the test folder should all be licensed correctly, howeve
 
 Does not yet validate checksums or do any sort of file sanitiation. 
 
+### Web Open Font Format
+
+Support for woff and woff2 is a possibility in the future
+
 ### TABLE PROGRESS
 
 #### Complete
