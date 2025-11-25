@@ -1,5 +1,6 @@
-from fnt.types import F2DOT14, fixed
+from fnt.types import F2DOT14_from_bytes, fixed_from_bytes
 import pytest
+
 
 F2DOT14_vals = (
     (b"\x7F\xFF", 1.999939),
@@ -12,8 +13,8 @@ F2DOT14_vals = (
 
 
 @pytest.mark.parametrize("b, v", F2DOT14_vals)
-def test_F2DOT14(b: bytes, v: float):
-    assert F2DOT14(b) == pytest.approx(v)
+def test_F2DOT14_from_bytes(b: bytes, v: float):
+    assert F2DOT14_from_bytes(b) == pytest.approx(v)
 
 
 fixed_vals = (
@@ -27,5 +28,5 @@ fixed_vals = (
 
 
 @pytest.mark.parametrize("b, v", fixed_vals)
-def test_fixed(b, v):
-    assert fixed(b) == pytest.approx(v, rel=1.1e-4)
+def test_fixed_from_bytes(b, v):
+    assert fixed_from_bytes(b) == pytest.approx(v, rel=1.1e-4)
