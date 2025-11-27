@@ -3,13 +3,12 @@
  <!-- Th PRs welcome button links GitHub doc b/c the original makeapullrequest.com's gone. -->
  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) [![Tests (main)](https://github.com/DragonMoffon/pyfont/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/DragonMoffon/pyfont/actions/workflows/test.yaml?branch=main)
 
-A zero-dependency Python-only library for reading TTF and OTF fonts.
+Read TrueType (TTF) and OpenType (OTF) fonts with Python.
 
 > [!IMPORTANT]
-> This project only supports reading fonts!
-> To write font data, you will need a different libary.
+> To write TTF/OTF data, you will need a different libary.
 
-Support for [woff][] and woff2 is a possibility in the future.
+Support for [woff and woff2][woff] may be added in the future.
 
 [woff]: https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Fonts/WOFF
 
@@ -24,15 +23,17 @@ The basic Font, and Collection objects:
 
 ### Goals
 
-Table definitions and parsing aim to implement the
-following documents:
+Table definitions and parsing aim to implement
+the following specifications:
 
 1. [The Microsoft OpenType Specification][]
 2. [The Apple TrueType Reference Manual][]
 
-In the event of a conflict, the OpenType (OTF) specification
-takes precedence. Lists of planned and finished OTF tables
-tables are located in the [TABLE PROGRESS](#table-progress)
+The OpenType (OTF) specification takes precedence if
+the documents ever conflict.
+
+For implementation status of each OpenType table,
+please see the [TABLE PROGRESS](#table-progress)
 section below.
 
 [The Microsoft OpenType Specification]: https://learn.microsoft.com/en-us/typography/opentype/spec/otf
