@@ -36,7 +36,7 @@ For implementation status of each OpenType table,
 please see the [TABLE PROGRESS](#table-progress)
 section below.
 
-[The Microsoft OpenType Specification]: https://learn.microsoft.com/en-us/typography/opentype/spec/otf
+[The Microsoft OpenType Specification]: https://learn.microsoft.com/en-us/typography/opentype/spec/
 [The Apple TrueType Reference Manual]: https://developer.apple.com/fonts/TrueType-Reference-Manual/
 
 
