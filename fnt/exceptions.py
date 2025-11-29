@@ -1,23 +1,9 @@
-class InvalidFieldTypeError(Exception):
+class MissingTableError(KeyError):
 
-    def __init__(self, entry: str):
-        Exception.__init__(self, f"Table field type {entry} is not supported")
+    def __init__(self, table_name: str, *args):
+        KeyError.__init__(f"font does not contain the {table_name} table.", *args)
 
+class ParseError(ValueError):
 
-class MissingVersionFieldError(Exception):
-
-    def __init__(self, cls: type):
-        Exception.__init__(self, f"The versioned tabled {cls} must have version fields")
-
-
-class IllformedTTFTypeError(Exception):
-
-    def __init__(self, cls: type):
-        Exception.__init__(self, f"{cls} is not a fully formed TTF type")
-
-
-class TableRedefinitionError(Exception):
-    def __init__(self, cls: type):
-        Exception.__init__(
-            self, f"{cls} has already been defined, use {cls}.version(<x>) instead."
-        )
+    def __init__(self, table_name: str, *args) -> None:
+        ValueError.__init__(f"failed to parse the {table_name} table", *args)

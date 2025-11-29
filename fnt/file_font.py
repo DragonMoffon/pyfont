@@ -1,6 +1,8 @@
 from pathlib import Path
 
 from .font import Font, TableRef
+from .types import uint32
+from .exceptions import MissingTableError, ParseError
 from .tables import (
     Table,
     TableDirectory,
@@ -95,18 +97,6 @@ class FileFont(Font):
         }
         self._tables: dict[str, Table] = {"directory": table_directory}
 
-    def seek(self, offset: int):
-        self._byte_offset = offset
-
-    def read(self, sz: int) -> bytes:
-        n = self._byte_offset + sz
-        b = self._data[self._byte_offset : n]
-        self._byte_offset = n
-        return b
-
-    def pointer(self) -> int:
-        return self._byte_offset
-
     def get_record(self, name: str) -> TableRecord:
         if name not in self._records:
             # TODO: make custom error for this
@@ -125,12 +115,12 @@ class FileFont(Font):
             return self._tables[name]
 
         if name not in self._records:
-            raise KeyError(f"font does not contain the {name} table.")
+            raise MissingTableError(name)
 
         record = self._records[name]
         table = parsers[name](self, record)
         if table is None:
-            raise ValueError(f"Failed to parse {name} table.")
+            raise ParseError(name)
         self._tables[record.tableTag] = table
 
         return table
@@ -141,10 +131,23 @@ class FileFont(Font):
     def is_table_parsed(self, name: str) -> bool:
         return name in self._tables
 
+    def seek(self, offset: int):
+        self._byte_offset = offset
+
+    def read(self, sz: int) -> bytes:
+        n = self._byte_offset + sz
+        b = self._data[self._byte_offset : n]
+        self._byte_offset = n
+        return b
+
+    def pointer(self) -> int:
+        return self._byte_offset
+
     @classmethod
     def from_file(cls, file: Path):
         with open(file, "rb") as fp:
             data = fp.read()
+
         return cls(data, file)
 
     # -- TableRefs for better type checking --
