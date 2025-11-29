@@ -104,6 +104,17 @@ class FileFont(Font):
 
         return self._records[name]
 
+    def get_checksum(self, start: int, length: int) -> uint32:
+        # the checksum is the unsigned sum of the bytes of a table interpreted as uint32.
+        # This includes the 4 byte padding not included in the table length definition.
+        # we dont ensure the padding bytes are all zeros.
+
+        self.seek(start)
+        # uses smart bit manipulation to ensure required padding is added.
+        count = ((length + 3) & ~3) // 4
+        a = self.get_uint32_array(count)
+        return sum(self.get_uint32_array(count))
+
     def get_table_names(self) -> tuple[str, ...]:
         return tuple(self._records.keys())
 
