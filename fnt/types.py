@@ -244,7 +244,7 @@ def tag_to_bytes(v: tag) -> bytes:
 
 
 def version16dot16_from_bytes(b: bytes) -> version16dot16:
-    return uint16_from_bytes(b[:2]), (b[2] & 0xF0) >> 4
+    return uint16_from_bytes(b[:2]), (uint16_from_bytes([2]) & 0xF0) >> 4
 
 
 def version16dot16_to_bytes(v: version16dot16) -> bytes:
