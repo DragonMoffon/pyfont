@@ -1,3 +1,4 @@
+from os import read
 from typing import Callable
 
 from .tables import Table, TableRecord
@@ -36,6 +37,9 @@ __all__ = ("Font", "ParseMethod", "TableRef")
 # Abstract
 class Font:
     def get_record(self, name: str) -> TableRecord:
+        raise NotImplementedError()
+
+    def get_checksum(self, name: str) -> uint32:
         raise NotImplementedError()
 
     def get_table_names(self) -> tuple[str, ...]:
