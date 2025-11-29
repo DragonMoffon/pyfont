@@ -1,4 +1,3 @@
-from os import read
 from typing import Callable
 
 from .tables import Table, TableRecord
@@ -41,6 +40,11 @@ class Font:
 
     def get_checksum(self, name: str) -> uint32:
         raise NotImplementedError()
+
+    def validate_checksum(self, name: str) -> bool:
+        checksum = self.get_checksum(name)
+        record = self.get_record(name) # No need to "has table" check as get_checksum does this already
+        return checksum == record.checksum
 
     def get_table_names(self) -> tuple[str, ...]:
         raise NotImplementedError()
