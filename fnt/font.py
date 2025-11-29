@@ -1,6 +1,7 @@
 from typing import Callable
 
 from .tables import Table, TableRecord
+from .exceptions import MissingTableError
 from .types import (
     uint8,
     int8,
@@ -38,12 +39,15 @@ class Font:
     def get_record(self, name: str) -> TableRecord:
         raise NotImplementedError()
 
-    def get_checksum(self, name: str) -> uint32:
+    def get_checksum(self, start: int, length: int) -> uint32:
         raise NotImplementedError()
 
     def validate_checksum(self, name: str) -> bool:
-        checksum = self.get_checksum(name)
-        record = self.get_record(name) # No need to "has table" check as get_checksum does this already
+        if not self.has_table(name):
+            raise MissingTableError(name)
+        record = self.get_record(name)
+        checksum = self.get_checksum(record.offset, record.length)
+        
         return checksum == record.checksum
 
     def get_table_names(self) -> tuple[str, ...]:
