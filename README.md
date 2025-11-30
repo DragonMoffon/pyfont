@@ -67,7 +67,8 @@ attributed in accordance with their licenses. They:
 If a font is improperly licensed, please either [file an issue][]
 or [open a pull request][].
 
-Does not yet validate checksums or do any sort of file sanitiation. 
+Provides checksum validation and basic file checking, but does not yet
+support file type detection.
 
 [file an issue]: https://github.com/DragonMoffon/pyfont/issues/new
 [open a pull request]: https://github.com/DragonMoffon/pyfont/pulls/compare
