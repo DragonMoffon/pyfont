@@ -104,15 +104,40 @@ class FileFont(Font):
 
         return self._records[name]
 
-    def get_checksum(self, start: int, length: int) -> uint32:
-        # the checksum is the unsigned sum of the bytes of a table interpreted as uint32.
-        # This includes the 4 byte padding not included in the table length definition.
-        # we dont ensure the padding bytes are all zeros.
+    def compute_checksum(self, start: int, length: int) -> uint32:
+        """
+        Calculate the checksum for a range of bytes based on the OTF spec.
+        This is a 32-bit unsigned integer so it has to be moduloed.
+
+        To find the checksum interpret all of the bytes of the table as
+        an array of 32-bit unsigned integers and sum them.
+
+        The length of a table given by its record does not include any
+        padding but the checksum (and the OTF spec) requires tables to
+        be aligned to 4 bytes. The padding is assumed to be all zeros,
+        but this is not checked.
+
+        The head table requires special conciderations not taken in this function.
+        """
 
         self.seek(start)
         # uses smart bit manipulation to ensure required padding is added.
         count = ((length + 3) & ~3) // 4
         return sum(self.get_uint32_array(count)) % 0x100000000
+
+    def compute_table_checksum(self, name: str) -> uint32:
+        if not self.has_table(name):
+            raise MissingTableError(name)
+
+        rec = self.get_record(name)
+        if name != "head":
+            return self.compute_checksum(rec.offset, rec.length)
+
+        checksumAdjustmentOffset = rec.offset + 12
+        before_adjustment = self.compute_checksum(rec.offset, 8)
+        after_adjustment = self.compute_checksum(checksumAdjustmentOffset, rec.length - 12)
+
+        return (before_adjustment + after_adjustment) % 0x100000000
 
     def get_table_names(self) -> tuple[str, ...]:
         return tuple(self._records.keys())
