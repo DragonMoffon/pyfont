@@ -112,8 +112,7 @@ class FileFont(Font):
         self.seek(start)
         # uses smart bit manipulation to ensure required padding is added.
         count = ((length + 3) & ~3) // 4
-        a = self.get_uint32_array(count)
-        return sum(self.get_uint32_array(count))
+        return sum(self.get_uint32_array(count)) % 0x100000000
 
     def get_table_names(self) -> tuple[str, ...]:
         return tuple(self._records.keys())
