@@ -39,14 +39,17 @@ class Font:
     def get_record(self, name: str) -> TableRecord:
         raise NotImplementedError()
 
-    def get_checksum(self, start: int, length: int) -> uint32:
+    def compute_checksum(self, start: int, length: int) -> uint32:
+        raise NotImplementedError()
+
+    def compute_table_checksum(self, name: str) -> uint32:
         raise NotImplementedError()
 
     def validate_checksum(self, name: str) -> bool:
         if not self.has_table(name):
             raise MissingTableError(name)
         record = self.get_record(name)
-        checksum = self.get_checksum(record.offset, record.length)
+        checksum = self.compute_table_checksum(name)
         
         return checksum == record.checksum
 
