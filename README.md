@@ -19,6 +19,7 @@ The basic Font, and Collection objects:
 
 - do no work to process the fonts
 - partly implement v1.9.1 of [The Microsoft OpenType Specification][]
+- supports checking table checksum and file checksum
 
 
 ### Goals
@@ -65,10 +66,7 @@ attributed in accordance with their licenses. They:
 - will **never** be included in any PyPI releases
 
 If a font is improperly licensed, please either [file an issue][]
-or [open a pull request][].
-
-Provides checksum validation and basic file checking, but does not yet
-support file type detection.
+or [open a pull request][]..
 
 [file an issue]: https://github.com/DragonMoffon/pyfont/issues/new
 [open a pull request]: https://github.com/DragonMoffon/pyfont/pulls/compare
