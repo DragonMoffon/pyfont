@@ -149,10 +149,17 @@ or [open a pull request][]..
 - [ ] MVAR (metrics variation)
 - [x] PCLT (PCL 5)
 - [ ] STAT (style attributes)
-- [ ] SVG (scalar vector graphics)
+- [ ] SVG  (scalar vector graphics)
 - [ ] VDMX (vertical device metrics)
 - [ ] VORG (vetical origin)
 - [ ] VVAR (vertical metrics variations)
+
+
+##### Font Forge Tables
+- [ ] BDF  (BDF properties)
+- [ ] FFTM (FontForge time stamp)
+- [ ] PfEd (font forge extension)
+- [ ] TeX  (TeX metrics)
 
 #### Definition
 - [ ] acnt
@@ -160,6 +167,7 @@ or [open a pull request][]..
 - [x] avar
 - [ ] BASE
 - [ ] bdat
+- [ ] BDF 
 - [ ] bhed
 - [ ] bloc
 - [ ] bsln
@@ -178,6 +186,7 @@ or [open a pull request][]..
 - [ ] EBSC
 - [ ] fdsc
 - [ ] feat
+- [ ] FFTM
 - [ ] fmtx
 - [ ] fond
 - [x] fpgm
@@ -212,12 +221,14 @@ or [open a pull request][]..
 - [ ] opbd
 - [x] OS/2
 - [x] PCLT
+- [ ] PfEd
 - [x] post
 - [x] prep
 - [ ] prop
 - [x] sbix
 - [ ] STAT
 - [x] SVG
+- [ ] TeX 
 - [ ] trak
 - [ ] VDMX
 - [ ] vhea
@@ -233,6 +244,7 @@ or [open a pull request][]..
 - [x] avar
 - [ ] BASE
 - [ ] bdat
+- [ ] BDF 
 - [ ] bhed
 - [ ] bloc
 - [ ] bsln
@@ -251,6 +263,7 @@ or [open a pull request][]..
 - [ ] EBSC
 - [ ] fdsc
 - [ ] feat
+- [ ] FFTM
 - [ ] fmtx
 - [ ] fond
 - [x] fpgm
@@ -285,12 +298,14 @@ or [open a pull request][]..
 - [ ] opbd
 - [x] OS/2
 - [x] PCLT
+- [ ] PfEd
 - [x] post
 - [ ] prep
 - [ ] prop
 - [ ] sbix
 - [ ] STAT
-- [ ] SVG
+- [ ] SVG 
+- [ ] TeX  
 - [ ] trak
 - [ ] VDMX
 - [ ] vhea
