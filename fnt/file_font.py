@@ -97,6 +97,10 @@ class FileFont(Font):
         }
         self._tables: dict[str, Table] = {"directory": table_directory}
 
+    def validate_font(self):
+        checksum = self.compute_checksum(0, len(self._data))
+        return checksum == 0xB1B0AFBA
+
     def get_record(self, name: str) -> TableRecord:
         if name not in self._records:
             # TODO: make custom error for this

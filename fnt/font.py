@@ -36,6 +36,10 @@ __all__ = ("Font", "ParseMethod", "TableRef")
 
 # Abstract
 class Font:
+
+    def validate_font(self) -> bool:
+        raise NotImplementedError()
+
     def get_record(self, name: str) -> TableRecord:
         raise NotImplementedError()
 
