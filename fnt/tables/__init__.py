@@ -193,6 +193,10 @@ class bdat: ...  # TODO: bdat
 
 
 @table
+class BDF: ... # TODO: BDF
+
+
+@table
 class bhed: ...  # TODO: bhed
 
 
@@ -282,6 +286,10 @@ class fdsc: ...  # TODO: fdsc
 
 @table
 class feat: ...  # TODO: feat
+
+
+@table
+class FFTM: ... # TODO: FFTM
 
 
 @table
@@ -689,6 +697,8 @@ class PCLT:  # TODO: PCLT unique types and functions for fetching them.
     serifStyle: uint8
     reserved: uint8
 
+@table
+class PfEd: ... # TODO: PfEd
 
 @table
 class post_v1:
@@ -732,32 +742,6 @@ class prop: ...  # TODO: prop
 
 
 @table
-class STAT: ...  # TODO: STAT
-
-
-@table
-class SVGDocumentRecord:
-    startGlyphID: uint16
-    endGlyphID: uint16
-    svgDocOffset: offset32
-    svgDocLength: uint32
-
-
-@table
-class SVGDocumentList:
-    numEntries: uint16
-    documentRecords: tuple[SVGDocumentRecord, ...]
-
-
-@table
-class SVG:
-    version: uint16
-    svgDocumentListOffset: offset32
-    reserved: uint32
-    svgDocumentList: SVGDocumentList
-
-
-@table
 class sbixHeader:
     version: uint16
     flags: uint16
@@ -786,6 +770,35 @@ class sbix:
     strikes: tuple[Strike, ...]
     glyphs: tuple[sbixGlyph, ...]
 
+
+@table
+class STAT: ...  # TODO: STAT
+
+
+@table
+class SVGDocumentRecord:
+    startGlyphID: uint16
+    endGlyphID: uint16
+    svgDocOffset: offset32
+    svgDocLength: uint32
+
+
+@table
+class SVGDocumentList:
+    numEntries: uint16
+    documentRecords: tuple[SVGDocumentRecord, ...]
+
+
+@table
+class SVG:
+    version: uint16
+    svgDocumentListOffset: offset32
+    reserved: uint32
+    svgDocumentList: SVGDocumentList
+
+
+@table
+class TeX: ... # TODO: TeX
 
 @table
 class trak: ...  # TODO: trak
@@ -827,6 +840,7 @@ type Table = (
     | avar
     | BASE
     | bdat
+    | BDF
     | bhed
     | bloc
     | bsln
@@ -845,6 +859,7 @@ type Table = (
     | EBSC
     | fdsc
     | feat
+    | FFTM
     | fmtx
     | fond
     | fpgm
@@ -879,12 +894,14 @@ type Table = (
     | opbd
     | OS2
     | PCLT
+    | PfEd
     | post
     | prep
     | prop
     | sbix
     | STAT
     | SVG
+    | TeX
     | trak
     | VDMX
     | vhea
@@ -923,6 +940,7 @@ __all__ = (
     "BaseCoord_fmt3",
     "BaseCoord",
     "bdat",
+    "BDF",
     "bhed",
     "bloc",
     "bsln",
@@ -960,6 +978,7 @@ __all__ = (
     "EBSC",
     "fdsc",
     "feat",
+    "FFTM",
     "fmtx",
     "fond",
     "fpgm",
@@ -1011,6 +1030,7 @@ __all__ = (
     "OS2_v4",
     "OS2_v5",
     "PCLT",
+    "PfEd",
     "post",
     "post_v2",
     "post_v25",
@@ -1024,6 +1044,7 @@ __all__ = (
     "SVG",
     "SVGDocumentRecord",
     "SVGDocumentList",
+    "TeX",
     "trak",
     "VDMX",
     "vhea",
