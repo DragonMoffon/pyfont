@@ -435,10 +435,7 @@ def parse_cmap(font: Font, record: TableRecord) -> cmap:
 
     return cmap(
         header,
-        tuple(
-            parse_cmap_subtable(font, record, encoding)
-            for encoding in header.encodingRecords
-        ),
+        tuple(sub_tables)
     )
 
 
