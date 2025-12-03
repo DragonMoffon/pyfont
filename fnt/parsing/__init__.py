@@ -247,18 +247,6 @@ def parse_CFF(font: Font, record: TableRecord) -> CFF: ...  # TODO: CFF
 def parse_CFF2(font: Font, record: TableRecord) -> CFF2: ...  # TODO: CFF2
 
 
-def parse_map_group(font: Font):
-    return MapGroup(font.get_uint32(), font.get_uint32(), font.get_uint32())
-
-
-def parse_variation_selector(font: Font):
-    return VariationSelector(
-        font.get_uint32(),
-        font.get_offset32(),
-        font.get_offset32(),
-    )
-
-
 def parse_cmap_subtable(
     font: Font, record: TableRecord, encoding: EncodingRecord
 ) -> cmapSubtable:
@@ -342,7 +330,10 @@ def parse_cmap_subtable(
                 language,
                 is32,
                 count,
-                tuple(parse_map_group(font) for _ in range(count)),
+                tuple(
+                    MapGroup(font.get_uint32(), font.get_uint32(), font.get_uint32())
+                    for _ in range(count)
+                ),
             )
         case 10:
             reserved = font.get_uint16()
@@ -367,26 +358,42 @@ def parse_cmap_subtable(
                 length,
                 language,
                 count,
-                tuple(parse_map_group(font) for _ in range(count)),
+                tuple(
+                    MapGroup(font.get_uint32(), font.get_uint32(), font.get_uint32()) 
+                    for _ in range(count)
+                ),
             )
         case 13:
             reserved = font.get_uint16()
             length = font.get_uint32()
+            language = font.get_uint32()
             count = font.get_uint32()
             return cmapSubtable_v13(
                 fmt,
                 reserved,
                 length,
+                language,
                 count,
-                tuple(parse_map_group(font) for _ in range(count)),
+                tuple(
+                    MapGroup(font.get_uint32(), font.get_uint32(), font.get_uint32())
+                    for _ in range(count)
+                ),
             )
         case 14:
-            length = font.get_uint16()
+            length = font.get_uint32()
             count = font.get_uint32()
-            selectors = tuple(parse_variation_selector(font) for _ in range(count))
-            default = []
-            non_default = []
+            selectors = tuple(
+                VariationSelector(
+                    font.get_uint24(),
+                    font.get_offset32(),
+                    font.get_offset32(),
+                )
+                for _ in range(count)
+            )
+
+            selector_groups = []
             for selector in selectors:
+                default = None
                 if selector.defaultUVSOffset != 0:
                     font.seek(offset + selector.defaultUVSOffset)
                     num = font.get_uint32()
@@ -394,8 +401,9 @@ def parse_cmap_subtable(
                         UnicodeValueRange(font.get_uint24(), font.get_uint8())
                         for _ in range(num)
                     )
-                    default.append(DefaultUVS(num, ranges))
-
+                    default = DefaultUVS(num, ranges)
+                
+                non_default = None
                 if selector.nonDefaultUVSOffset != 0:
                     font.seek(offset + selector.nonDefaultUVSOffset)
                     num = font.get_uint32()
@@ -403,9 +411,11 @@ def parse_cmap_subtable(
                         UVSMapping(font.get_uint24(), font.get_uint16())
                         for _ in range(num)
                     )
-                    non_default.append(NonDefaultUVS(num, mappings))
+                    non_default = NonDefaultUVS(num, mappings)
+
+                    selector_groups = (selector, default, non_default)
             return cmapSubtable_v14(
-                fmt, length, count, selectors, tuple(default), tuple(non_default)
+                fmt, length, count, tuple(selector_groups)
             )
 
 

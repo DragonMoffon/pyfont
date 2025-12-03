@@ -123,6 +123,7 @@ class cmapSubtable_v13:
     format: uint16
     reserved: uint16
     length: uint32
+    language: uint32
     numGroups: uint32
     groups: tuple[MapGroup, ...]
 
@@ -163,10 +164,7 @@ class cmapSubtable_v14:
     format: uint16
     length: uint16
     numVarSelectorRecords: uint32
-    varSelector: tuple[VariationSelector, ...]
-    defaultUVS: tuple[DefaultUVS, ...]
-    nonDefaultUVS: tuple[NonDefaultUVS, ...]
-
+    varSelector: tuple[tuple[VariationSelector, DefaultUVS | None, NonDefaultUVS | None], ...]
 
 type cmapSubtable = Literal[  # type: ignore
     cmapSubtable_v0,
