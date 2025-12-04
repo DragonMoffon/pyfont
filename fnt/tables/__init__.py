@@ -1,5 +1,4 @@
 from fnt.types import (
-    offset16_from_bytes,
     table,
     uint8,
     int8,
@@ -15,6 +14,9 @@ from fnt.types import (
     LONGDATETIME,
     tag,
     version16dot16,
+    int8x16,
+    int8x6,
+    int8x8
 )
 
 # fmt: off
@@ -681,9 +683,9 @@ class PCLT:  # TODO: PCLT unique types and functions for fetching them.
     typeFamily: uint16
     capHeight: uint16
     symbolSet: uint16
-    typeface: tuple[int8, ...]  # Always 16 items
-    characterComplement: tuple[int8, ...]  # Always 8 items
-    fileName: tuple[int8, ...]  # Always 6 itms
+    typeface: int8x16 # Always 16 items
+    characterComplement: int8x8
+    fileName: int8x6
     strokeWeight: int8
     widthType: int8
     serifStyle: uint8
