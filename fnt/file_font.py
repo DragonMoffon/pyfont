@@ -12,6 +12,7 @@ from .tables import (
     avar as avarTable,
     BASE as BASETable,
     bdat as bdatTable,
+    BDF as BDFTable,
     bhed as bhedTable,
     bloc as blocTable,
     bsln as bslnTable,
@@ -30,6 +31,7 @@ from .tables import (
     EBSC as EBSCTable,
     fdsc as fdscTable,
     feat as featTable,
+    FFTM as FFTMTable,
     fmtx as fmtxTable,
     fond as fondTable,
     fpgm as fpgmTable,
@@ -64,12 +66,14 @@ from .tables import (
     opbd as opbdTable,
     OS2 as OS2Table,
     PCLT as PCLTTable,
+    PfEd as PfEdTable,
     post as postTable,
     prep as prepTable,
     prop as propTable,
     sbix as sbixTable,
     STAT as STATTable,
     SVG as SVGTable,
+    TeX as TeXTable,
     trak as trakTable,
     VDMX as VDMXTable,
     vhea as vheaTable,
@@ -196,6 +200,7 @@ class FileFont(Font):
     avar: avarTable | None = TableRef(avarTable)
     BASE: BASETable | None = TableRef(BASETable)
     bdat: bdatTable | None = TableRef(bdatTable)
+    BDF: BDFTable | None = TableRef(BDFTable, "BDF ")
     bhed: bhedTable | None = TableRef(bhedTable)
     bloc: blocTable | None = TableRef(blocTable)
     bsln: bslnTable | None = TableRef(bslnTable)
@@ -214,6 +219,7 @@ class FileFont(Font):
     EBSC: EBSCTable | None = TableRef(EBSCTable)
     fdsc: fdscTable | None = TableRef(fdscTable)
     feat: featTable | None = TableRef(featTable)
+    FFTM: FFTMTable | None = TableRef(FFTMTable)
     fmtx: fmtxTable | None = TableRef(fmtxTable)
     fond: fondTable | None = TableRef(fondTable)
     fpgm: fpgmTable | None = TableRef(fpgmTable)
@@ -248,12 +254,14 @@ class FileFont(Font):
     opbd: opbdTable | None = TableRef(opbdTable)
     OS2: OS2Table | None = TableRef(OS2Table, "OS/2")
     PCLT: PCLTTable | None = TableRef(PCLTTable)
+    PfEd: PfEdTable | None = TableRef(PfEdTable)
     post: postTable | None = TableRef(postTable)
     prep: prepTable | None = TableRef(prepTable)
     prop: propTable | None = TableRef(propTable)
     sbix: sbixTable | None = TableRef(sbixTable)
     STAT: STATTable | None = TableRef(STATTable)
     SVG: SVGTable | None = TableRef(SVGTable, "SVG ")
+    TeX: TeXTable | None = TableRef(TeXTable, "TeX ")
     trak: trakTable | None = TableRef(trakTable)
     VDMX: VDMXTable | None = TableRef(VDMXTable)
     vhea: vheaTable | None = TableRef(vheaTable)

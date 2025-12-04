@@ -29,6 +29,7 @@ the following specifications:
 
 1. [The Microsoft OpenType Specification][]
 2. [The Apple TrueType Reference Manual][]
+3. Custom tables such as those from [FontForge][]
 
 The OpenType (OTF) specification takes precedence if
 the documents ever conflict.
@@ -39,7 +40,7 @@ section below.
 
 [The Microsoft OpenType Specification]: https://learn.microsoft.com/en-us/typography/opentype/spec/
 [The Apple TrueType Reference Manual]: https://developer.apple.com/fonts/TrueType-Reference-Manual/
-
+[FontForge]: https://fontforge.org/docs/techref/non-standard.html
 
 ## Contributing
 
@@ -149,10 +150,17 @@ or [open a pull request][]..
 - [ ] MVAR (metrics variation)
 - [x] PCLT (PCL 5)
 - [ ] STAT (style attributes)
-- [ ] SVG (scalar vector graphics)
+- [ ] SVG  (scalar vector graphics)
 - [ ] VDMX (vertical device metrics)
 - [ ] VORG (vetical origin)
 - [ ] VVAR (vertical metrics variations)
+
+
+##### Font Forge Tables
+- [ ] BDF  (BDF properties)
+- [ ] FFTM (FontForge time stamp)
+- [ ] PfEd (font forge extension)
+- [ ] TeX  (TeX metrics)
 
 #### Definition
 - [ ] acnt
@@ -160,6 +168,7 @@ or [open a pull request][]..
 - [x] avar
 - [ ] BASE
 - [ ] bdat
+- [ ] BDF 
 - [ ] bhed
 - [ ] bloc
 - [ ] bsln
@@ -178,6 +187,7 @@ or [open a pull request][]..
 - [ ] EBSC
 - [ ] fdsc
 - [ ] feat
+- [ ] FFTM
 - [ ] fmtx
 - [ ] fond
 - [x] fpgm
@@ -212,12 +222,14 @@ or [open a pull request][]..
 - [ ] opbd
 - [x] OS/2
 - [x] PCLT
+- [ ] PfEd
 - [x] post
 - [x] prep
 - [ ] prop
 - [x] sbix
 - [ ] STAT
 - [x] SVG
+- [ ] TeX 
 - [ ] trak
 - [ ] VDMX
 - [ ] vhea
@@ -233,6 +245,7 @@ or [open a pull request][]..
 - [x] avar
 - [ ] BASE
 - [ ] bdat
+- [ ] BDF 
 - [ ] bhed
 - [ ] bloc
 - [ ] bsln
@@ -251,6 +264,7 @@ or [open a pull request][]..
 - [ ] EBSC
 - [ ] fdsc
 - [ ] feat
+- [ ] FFTM
 - [ ] fmtx
 - [ ] fond
 - [x] fpgm
@@ -285,12 +299,14 @@ or [open a pull request][]..
 - [ ] opbd
 - [x] OS/2
 - [x] PCLT
+- [ ] PfEd
 - [x] post
 - [ ] prep
 - [ ] prop
 - [ ] sbix
 - [ ] STAT
-- [ ] SVG
+- [ ] SVG 
+- [ ] TeX  
 - [ ] trak
 - [ ] VDMX
 - [ ] vhea

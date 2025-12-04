@@ -27,6 +27,7 @@ from fnt.tables import (
     BaseCoord_fmt3,
     BaseCoord,
     bdat,
+    BDF,
     bhed,
     bloc,
     bsln,
@@ -67,6 +68,7 @@ from fnt.tables import (
     EBSC,
     fdsc,
     feat,
+    FFTM,
     fmtx,
     fond,
     fpgm,
@@ -115,6 +117,7 @@ from fnt.tables import (
     OS2_v5,
     OS2_v4,
     PCLT,
+    PfEd,
     post,
     post_v1,
     post_v2,
@@ -124,6 +127,7 @@ from fnt.tables import (
     sbix,
     STAT,
     SVG,
+    TeX,
     trak,
     VDMX,
     vhea,
@@ -238,6 +242,7 @@ def parse_BASE(font: Font, record: TableRecord) -> BASE:  # TODO: BASE
 
 
 def parse_bdat(font: Font, record: TableRecord) -> bdat: ...  # TODO: bdat
+def parse_BDF(font: Font, record: TableRecord) -> BDF: ... # TODO: BDF
 def parse_bhed(font: Font, record: TableRecord) -> bhed: ...  # TODO: bhed
 def parse_bloc(font: Font, record: TableRecord) -> bloc: ...  # TODO: bloc
 def parse_bsln(font: Font, record: TableRecord) -> bsln: ...  # TODO: bsln
@@ -491,6 +496,7 @@ def parse_EBLC(font: Font, record: TableRecord) -> EBLC: ...  # TODO: EBLC
 def parse_EBSC(font: Font, record: TableRecord) -> EBSC: ...  # TODO: EBSC
 def parse_fdsc(font: Font, record: TableRecord) -> fdsc: ...  # TODO: fdsc
 def parse_feat(font: Font, record: TableRecord) -> feat: ...  # TODO: feat
+def parse_FFTM(font: Font, record: TableRecord) -> FFTM: ...  # TODO: FFTM
 def parse_fmtx(font: Font, record: TableRecord) -> fmtx: ...  # TODO: fmtx
 def parse_fond(font: Font, record: TableRecord) -> fond: ...  # TODO: fond
 
@@ -915,6 +921,9 @@ def parse_PCLT(font: Font, record: TableRecord) -> PCLT:
     )
 
 
+def parse_PfEd(font: Font, record: TableRecord) -> PfEd: ...  # TODO: PfEd
+
+
 def parse_post(font: Font, record: TableRecord) -> post:
     font.seek(record.offset)
     version = font.get_version_legacy()
@@ -982,6 +991,7 @@ def parse_prop(font: Font, record: TableRecord) -> prop: ...  # TODO: prop
 def parse_sbix(font: Font, record: TableRecord) -> sbix: ...  # TODO: sbix
 def parse_STAT(font: Font, record: TableRecord) -> STAT: ...  # TODO: STAT
 def parse_SVG(font: Font, record: TableRecord) -> SVG: ...  # TODO: SVG
+def parse_TeX(font: Font, record: TableRecord) -> TeX: ...  # TODO: TeX
 def parse_trak(font: Font, record: TableRecord) -> trak: ...  # TODO: trak
 def parse_VDMX(font: Font, record: TableRecord) -> VDMX: ...  # TODO: VDMX
 def parse_vhea(font: Font, record: TableRecord) -> vhea: ...  # TODO: vhea
@@ -998,12 +1008,13 @@ parsers: dict[str, ParseMethod] = {
     "avar": parse_avar,
     "BASE": parse_BASE,
     "bdat": parse_bdat,
+    "BDF ": parse_BDF,
     "bhed": parse_bhed,
     "bloc": parse_bloc,
     "bsln": parse_bsln,
     "CBDT": parse_CBDT,
     "CBLC": parse_CBLC,
-    "CFF": parse_CFF,
+    "CFF ": parse_CFF,
     "CFF2": parse_CFF2,
     "cmap": parse_cmap,
     "COLR": parse_COLR,
@@ -1016,6 +1027,7 @@ parsers: dict[str, ParseMethod] = {
     "EBSC": parse_EBSC,
     "fdsc": parse_fdsc,
     "feat": parse_feat,
+    "FFTM": parse_FFTM,
     "fmtx": parse_fmtx,
     "fond": parse_fond,
     "fpgm": parse_fpgm,
@@ -1048,14 +1060,16 @@ parsers: dict[str, ParseMethod] = {
     "MVAR": parse_MVAR,
     "name": parse_name,
     "opbd": parse_opbd,
-    "OS2": parse_OS2,
+    "OS/2": parse_OS2,
     "PCLT": parse_PCLT,
+    "PfED": parse_PfEd,
     "post": parse_post,
     "prep": parse_prep,
     "prop": parse_prop,
     "sbix": parse_sbix,
     "STAT": parse_STAT,
-    "SVG": parse_SVG,
+    "SVG ": parse_SVG,
+    "TeX ": parse_TeX,
     "trak": parse_trak,
     "VDMX": parse_VDMX,
     "vhea": parse_vhea,
