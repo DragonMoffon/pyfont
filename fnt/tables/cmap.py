@@ -1,9 +1,8 @@
-from typing import Literal
+from typing import Union
 
-from fnt.types import table, uint8, uint16, int16, uint24, uint32, offset32
+from fnt.types import table, uint8, uint16, int16, uint24, uint32, offset32, uint8x256, uint8x8192
 
 __all__ = ("cmapHeader", "cmapSubtable", "cmap")
-
 
 @table
 class EncodingRecord:
@@ -25,7 +24,7 @@ class cmapSubtable_v0:
     format: uint16
     length: uint16
     language: uint16
-    glyphIdArray: tuple[uint8, ...]  # 256 items always, but that's excessive to record
+    glyphIdArray: uint8x256
 
 
 @table
@@ -42,7 +41,7 @@ class cmapSubtable_v2:
     format: uint16
     length: uint16
     language: uint16
-    subHeaderKeys: tuple[uint16, ...]  # always 256 items
+    subHeaderKeys: uint8x256
     subHeaders: tuple[cmapSubHeader, ...]
     glyphIdArray: tuple[uint16, ...]
 
@@ -101,7 +100,7 @@ class cmapSubtable_v8:
     format: uint16
     length: uint16
     language: uint16
-    is32: tuple[uint8, ...]  # Always 8192 items
+    is32: uint8x8192
     numGroups: uint32
     groups: tuple[MapGroup, ...]
 
@@ -166,7 +165,7 @@ class cmapSubtable_v14:
     numVarSelectorRecords: uint32
     varSelector: tuple[tuple[VariationSelector, DefaultUVS | None, NonDefaultUVS | None], ...]
 
-type cmapSubtable = Literal[  # type: ignore
+type cmapSubtable = Union[
     cmapSubtable_v0,
     cmapSubtable_v2,
     cmapSubtable_v4,
@@ -177,7 +176,6 @@ type cmapSubtable = Literal[  # type: ignore
     cmapSubtable_v13,
     cmapSubtable_v14,
 ]
-
 
 @table
 class cmap:
