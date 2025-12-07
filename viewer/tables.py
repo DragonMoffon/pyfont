@@ -66,7 +66,7 @@ TABLES = [
     FontTable("COLR", "Color", ["otf"], "Color presentations for glyphs."),
     FontTable("CPAL", "Color Palette", ["otf"], "Only exists if [u]COLR[/u] is present."),
     FontTable("cvar", "CVT Variations", ["ttf", "otf"], "Variations for the values in the [u]cvt [/u] table."),
-    FontTable("cvt",  "Control Value", ["ttf", "otf"], "Contains a list of variables used by instructions.", defined = True, parsable = True),
+    FontTable("cvt ", "Control Value", ["ttf", "otf"], "Contains a list of variables used by instructions.", defined = True, parsable = True),
     FontTable("DSIG", "Digital Signatures", ["otf"], defined = True, parsable = True),
     FontTable("EBDT", "Embedded Bitmap Data", ["otf"]),
     FontTable("EBLC", "Embedded Bitmap Location", ["otf"]),
