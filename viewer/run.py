@@ -25,7 +25,7 @@ FONT_PATHS: list[Path] = []
 for e in FONT_EXTENSIONS:
     FONT_PATHS.extend(Path(FONT_PATH).glob(f"*.{e}"))
 
-_LIMIT = 100
+_LIMIT = 100000
 LIMIT = min(_LIMIT, len(FONT_PATHS))
 
 FONTS: list["Font"] = []
