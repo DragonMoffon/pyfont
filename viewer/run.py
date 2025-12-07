@@ -1,271 +1,44 @@
 import operator
 from pathlib import Path
 import subprocess
+from typing import cast
 
 from textual.events import Click, Event
-import unicodedataplus as unicodedata
 
-import rich.text
 from fnt import FileFont
-from fnt.exceptions import ParseError
 
 from textual import work
 from textual.app import App, ComposeResult
 from textual.message import Message
 from textual.screen import Screen, ModalScreen
-from textual.containers import Horizontal, CenterMiddle, VerticalScroll, Vertical, Grid
+from textual.containers import Horizontal, CenterMiddle, VerticalScroll, Vertical
 from textual.widgets import DataTable, Header, Footer, ProgressBar, Label, Digits, Static, Rule, Button
 
-from fnt.tables.cmap import cmapSubtable_v4
+from viewer.fonts import Font
+from viewer.tables import TABLE_DIRECTORY
 
-TABLES = (
-    "acnt",
-    "ankr",
-    "avar",
-    "BASE",
-    "bdat",
-    "bhed",
-    "bloc",
-    "bsln",
-    "CBDT",
-    "CBLC",
-    "CFF",
-    "CFF2",
-    "cmap",
-    "COLR",
-    "CPAL",
-    "cvar",
-    "cvt",
-    "DSIG",
-    "EBDT",
-    "EBLC",
-    "EBSC",
-    "fdsc",
-    "feat",
-    "fmtx",
-    "fond",
-    "fpgm",
-    "fvar",
-    "gasp",
-    "GDEF",
-    "glyf",
-    "GPOS",
-    "GSUB",
-    "gvar",
-    "hdmx",
-    "head",
-    "hhea",
-    "hmtx",
-    "HVAR",
-    "JSTF",
-    "just",
-    "kern",
-    "kerx",
-    "lcar",
-    "loca",
-    "ltag",
-    "LTSH",
-    "MATH",
-    "maxp",
-    "MERG",
-    "meta",
-    "mort",
-    "morx",
-    "MVAR",
-    "name",
-    "opbd",
-    "OS/2",
-    "PCLT",
-    "post",
-    "prep",
-    "prop",
-    "sbix",
-    "STAT",
-    "SVG",
-    "trak",
-    "VDMX",
-    "vhea",
-    "vmtx",
-    "VORG",
-    "VVAR",
-    "xref",
-    "Zapf"
-)
-
-APPLE_ICON = "🍎"
-WINDOWS_ICON = "🪟"
-
-TABLE_DECS = {
-    "acnt": f"Accent Attachment Table {APPLE_ICON}",
-    "ankr": f"Anchor Point Table {APPLE_ICON}\nFor use with the [u]kerx[/u] table.",
-    "avar": "Axis Variations\nUsed in variable fonts.",
-    "BASE": f"Baseline Table {WINDOWS_ICON}\nUsed to align glyphs of different scripts and sizes in a line of text.",
-    "bdat": f"Bitmap Data {APPLE_ICON}\nUsed in bitmap fonts.",
-    "bhed": f"Bitmap Header {APPLE_ICON}\nUsed in bitmap fonts.",
-    "bloc": f"Bitmap Location {APPLE_ICON}\nUsed in bitmap fonts.",
-    "bsln": f"Baseline Table {APPLE_ICON}\nUsed to align glyphs of different scripts and sizes in a line of text.",
-    "CBDT": f"Color Bitmap Data {WINDOWS_ICON}\nUsed in bitmap fonts.",
-    "CBLC": f"Color Bitmap Header {WINDOWS_ICON}\nUsed in bitmap fonts.",
-    "CFF":  f"Compact Font Format Representation (Version 1) {WINDOWS_ICON}\nIn accordance with Adobe Technical Notes #5176 and #5177.",
-    "CFF2": f"Compact Font Format Representation (Version 2) {WINDOWS_ICON}\nAn alternative to the [u]glyf[/u] table.",
-    "cmap": "Character Map\nDefines the mapping of character codes to a default glyph index.",
-    "COLR": f"Color Table {WINDOWS_ICON}\nColor presentations for glyphs.",
-    "CPAL": f"Color Palette Table {WINDOWS_ICON}\nOnly exists if [u]COLR[/u] is present.",
-    "cvar": "CVT Variations\nVariations for the values in the [u]cvt [/u] table.",
-    "cvt": "Control Value Table\nContains a list of variables used by instructions.",
-    "DSIG": f"Digital Signatures {WINDOWS_ICON}",
-    "EBDT": "Embdedded Bitmap Data Table",
-    "EBLC": "Embedded Bitmap Location Table",
-    "EBSC": "Embedded Bitmap Scaling Table",
-    "fdsc": "Font Descriptors",
-    "feat": f"Feature Name Table {APPLE_ICON}",
-    "fmtx": "Font Metrics Table",
-    "fond": "'Provides the ability to have true data-fork fonts to behave as if they were in a font suitcase with associated FOND data.'",
-    "fpgm": "Font Program",
-    "fvar": "Font Variations Table",
-    "gasp": "Grid-fitting and Scan-conversion Procedure Table",
-    "GDEF": "Glyph Definition Table",
-    "glyf": "Glyph Data",
-    "GPOS": "Glyph Positioning Table",
-    "GSUB": "Glyph Substitution Table",
-    "gvar": "Glyph Variations Table",
-    "hdmx": "Horizontal Device Metrics",
-    "head": "Font Header Table",
-    "hhea": "Horizontal Header Table",
-    "hmtx": "Horizontal Metrics Table",
-    "HVAR": "Horizontal Metrics Variations Table",
-    "JSTF": f"Justification Table {WINDOWS_ICON}",
-    "just": f"Justification Table {APPLE_ICON}",
-    "kern": "Kerning Table",
-    "kerx": f"Kerning Table {APPLE_ICON}",
-    "lcar": f"Ligature Caret Table {APPLE_ICON}",
-    "loca": "Glyph Locations Table",
-    "ltag": f"IETF Language Tags {APPLE_ICON}",
-    "LTSH": "Linear Threshold Table",
-    "MATH": "Mathematical Typesetting Table",
-    "maxp": "Maximum Profile\nMaximum memory requirements for this font.",
-    "MERG": "Merge Table\nDefines the order of compositing in respect to anti-aliasing.",
-    "meta": "Metadata Table",
-    "mort": f"Glyph Metamorphosis Table {APPLE_ICON}\n[bold red]DEPRECATED[/bold red]",
-    "morx": f"Glyph Metamorphosis Table {APPLE_ICON}",
-    "MVAR": "Metrics Variations Table",
-    "name": "Naming Table\nMultilingual strings relating to this font.",
-    "opbd": f"Optical Bounds Table {APPLE_ICON}",
-    "OS/2": f"Metrics and Data Table {WINDOWS_ICON}\nRequired by Windows.",
-    "PCLT": "PCL5 Language Table\nProvides compatibility with the Hewlett-Packard PCL 5 printer language",
-    "post": "PostScript Table",
-    "prep": "Control Value Program\nPreviously the 'pre-program' table.",
-    "prop": f"Glyph Properties Table {APPLE_ICON}",
-    "sbix": "Standard Bitmap Graphics Table\nAllows bitmap data in standard formats like PNG, TIFF, or JPEG.",
-    "STAT": "Style Attributes Table",
-    "SVG": "Scalable Vector Graphics Table",
-    "trak": f"Tracking Table {APPLE_ICON}",
-    "VDMX": "Vertical Device Metrics Table",
-    "vhea": "Vertical Header Table",
-    "vmtx": "Vertical Metrics Table",
-    "VORG": "Vertical Origin Table",
-    "VVAR": "Vertical Metrics Variations Table",
-    "xref": f"Cross-Reference Table {APPLE_ICON}\nUsed by Apple font tools ftxdumperfuser and ftxenhancer, allowing the generation of other tables using symbolic names.",
-    "Zapf": f"Individual Glyph Information {APPLE_ICON}\nNamed after legendary type designer Hermann Zapf."
-}
-
+# TODO: Make this pass-in-able?
 FONT_PATH = "F:/!SORTED/Fonts"
-FONT_EXTENSIONS = ("ttf", "otf", "fnt")
+FONT_EXTENSIONS = ("ttf", "otf", "fnt", "ttc", "otc")
 
 FONT_PATHS: list[Path] = []
 for e in FONT_EXTENSIONS:
     FONT_PATHS.extend(Path(FONT_PATH).glob(f"*.{e}"))
 
-LIMIT = min(10000, len(FONT_PATHS))
+_LIMIT = 100
+LIMIT = min(_LIMIT, len(FONT_PATHS))
 
 FONTS: list["Font"] = []
 
-canon_tables = TABLES
+canon_tables = [t.id for t in TABLE_DIRECTORY.get_all_tables_by_custom_status(False)]
 fanon_tables = set()
+TABLE_DESCS = {t.id: t.description for t in TABLE_DIRECTORY.tables}
 
 def explore(path: Path):
     subprocess.run(['explorer', '/select,', path])
-
-class Font:
-    def __init__(self, file_font: FileFont, path: Path):
-        self.file_font = file_font
-        self.path = path
-
-        self.table_records = {}
-        for record in file_font.directory.tableRecords:
-            if record.tableTag == "OS/2":
-                self.table_records["OS/2"] = None  # TODO: This seems to be a bug in pyfont?
-                continue
-            try:
-                self.table_records[record.tableTag] = getattr(file_font, record.tableTag)
-            except (ParseError, AttributeError, UnicodeDecodeError):
-                self.table_records[record.tableTag] = None
-
-        self.char_ranges = []
-        for subtable in file_font.cmap.subTables:
-            if isinstance(subtable, cmapSubtable_v4):
-                for s, e in zip(subtable.startCode, subtable.endCode, strict = True):
-                    self.char_ranges.append((s, e))
-
-        self.unicode_blocks = set()
-        for s, e in self.char_ranges:
-            for i in range(s, e + 1):
-                self.unicode_blocks.add(unicodedata.block(chr(i)))
-
-    @property
-    def family(self) -> str:  # type: ignore -- typing is mad but I don't care
-        try:
-            record = None
-            for record in self.file_font.name.nameRecords:
-                if record.nameID == 1:
-                    return record.string
-            if record is None:
-                return ERROR
-        except Exception:
-            return ERROR
-        
-    @property
-    def weight(self) -> str | None:
-        try:
-            record = None
-            for record in self.file_font.name.nameRecords:
-                if record.nameID == 2:
-                    return record.string
-            if record is None:
-                return ERROR
-        except Exception:
-            return ERROR
-        
-    @property
-    def display_name(self) -> str:
-        if self.weight and self.weight != ERROR:
-            return f"{self.family} {self.weight}"
-        elif self.family != ERROR:
-            return self.family
-        else:
-            return ERROR
-        
-    @property
-    def tables(self) -> list[str]:
-        tables = []
-        for record in self.file_font.directory.tableRecords:
-            tables.append(record.tableTag)
-        return tables
-    
-    @property
-    def table_count(self) -> int:
-        return len(self.tables)
-    
-    @property
-    def char_count(self) -> int:
-        count = 0
-        for s, e in self.char_ranges:
-            count += (e - s) + 1
-        return count
     
 # --- BEGIN TEXTUAL APP ---
 
-ERROR = rich.text.Text("ERROR", style = "dim italic")
 NO_BLOCK = "[dim][italic]No Block[/italic][/dim]"
 YES = "✅"
 NO = "❌"
@@ -276,8 +49,8 @@ class Loaded(Message):
 class LoadingScreen(Screen):
     def __init__(self, *, name = None, id = None, classes = None):
         super().__init__(name, id, classes)
-        self.font_total = 0
 
+        self.font_total = 0
         self.classes = "centered_screen"
 
     def compose(self) -> ComposeResult:
@@ -343,7 +116,7 @@ class SummaryScreen(Screen):
 
     def on_mount(self) -> None:
         for table, value in self.sorted_tables:
-            bar = self.get_widget_by_id(f"bar_{table}".strip() if table != "OS/2" else "bar_os2")
+            bar: ProgressBar = self.get_widget_by_id(f"bar_{table}".strip() if table != "OS/2" else "bar_os2")  # type: ignore -- really, Textual?
             bar.advance(value)
 
 
@@ -354,7 +127,7 @@ class TableInfoScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         yield Vertical(
-            Label(TABLE_DECS[self.table_name] if self.table_name in TABLE_DECS else f"Unknown Table: {self.table_name}", id="question"),
+            Label(TABLE_DESCS[self.table_name] if self.table_name in TABLE_DESCS else f"Unknown Table: {self.table_name}", id="question"),
             Button("Close", id="quit"),
             id="dialog",
         )
@@ -409,6 +182,7 @@ class TableScreen(Screen):
 
     def __init__(self, *, name = None, id = None, classes = None):
         super().__init__(name, id, classes)
+
         self.last_clicked_header = "font_name"
         self.reverse = False
 

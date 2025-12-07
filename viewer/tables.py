@@ -147,3 +147,5 @@ class FontTableDirectory:
     
     def get_all_tables_by_parsable_status(self, parsable: bool) -> list[FontTable]:
         return [t for t in TABLES if t.parsable is parsable]
+
+TABLE_DIRECTORY = FontTableDirectory(TABLES)

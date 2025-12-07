@@ -1,5 +1,5 @@
 from pathlib import Path
-import unicodedata
+import unicodedataplus as unicodedata
 
 import rich.text
 from fnt.exceptions import ParseError
