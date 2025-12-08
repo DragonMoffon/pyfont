@@ -76,7 +76,7 @@ class Font:
         return len(self.tables)
     
     @property
-    def char_count(self) -> int:
+    def glyph_count(self) -> int:
         count = 0
         for s, e in self.char_ranges:
             count += (e - s) + 1

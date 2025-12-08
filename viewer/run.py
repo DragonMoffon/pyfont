@@ -1,6 +1,7 @@
 import operator
 from pathlib import Path
 import subprocess
+from typing import Any
 
 from textual.events import Click, Event
 
@@ -35,7 +36,14 @@ TABLE_DESCS = {t.id: t.description for t in TABLE_DIRECTORY.tables}
 
 def explore(path: Path):
     subprocess.run(['explorer', '/select,', path])
-    
+
+def int_or_str(i: Any) -> int | str:
+    try:
+        o = int(i)
+    except ValueError:
+        o = str(i)
+    return o
+
 # --- BEGIN TEXTUAL APP ---
 
 NO_BLOCK = "[dim][italic]No Block[/italic][/dim]"
@@ -118,6 +126,21 @@ class SummaryScreen(Screen):
             bar: ProgressBar = self.get_widget_by_id(f"bar_{table}".strip() if table != "OS/2" else "bar_os2")  # type: ignore -- really, Textual?
             bar.advance(value)
 
+class PopupInfoScreen(ModalScreen):
+    def __init__(self, content: str, name: str | None = None, id: str | None = None, classes: str | None = None):
+        super().__init__(name, id, classes)
+        self.content = content
+
+    def compose(self) -> ComposeResult:
+        yield Vertical(
+            Label(self.content, id="question"),
+            Button("Close", id="quit"),
+            id="dialog",
+        )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "quit":
+            self.app.pop_screen()
 
 class TableInfoScreen(ModalScreen):
     def __init__(self, table_name: str, name: str | None = None, id: str | None = None, classes: str | None = None):
@@ -153,7 +176,7 @@ class FontScreen(Screen):
         self.font = font
 
     def compose(self) -> ComposeResult:
-        sidebar_text = f"[italic]File Name[/italic]\n{self.font.path.name}\n\n[italic]Glyph Count[/italic]\n{self.font.char_count}\n\n[italic]Tables[/italic]\n"
+        sidebar_text = f"[italic]File Name[/italic]\n{self.font.path.name}\n\n[italic]Glyph Count[/italic]\n{self.font.glyph_count}\n\n[italic]Tables[/italic]\n"
 
         blocks = ""
         for block in self.font.unicode_blocks:
@@ -194,7 +217,7 @@ class TableScreen(Screen):
 
     def on_show(self) -> None:
         table = self.query_one(DataTable)
-        table.add_columns(("Name", "font_name"), ("T#", "table_count"))
+        table.add_columns(("Name", "font_name"), ("T#", "table_count"), ("G#", "glyph_count"))
         for t in canon_tables:
             table.add_column(t, key = t)
         for t in fanon_tables:
@@ -212,7 +235,7 @@ class TableScreen(Screen):
                 tables.append(YES if t in font.tables else NO)
             for t in fanon_tables:
                 tables.append(YES if t in font.tables else NO)
-            self.app.call_from_thread(table.add_row, font.display_name, font.table_count, *tables, font.path.name)
+            self.app.call_from_thread(table.add_row, font.display_name, font.table_count, font.glyph_count, *tables, font.path.name)
 
         table.sort("font_name", key = lambda x: str(x).casefold())
         table.loading = False
@@ -227,6 +250,10 @@ class TableScreen(Screen):
             self.app.push_screen(FontScreen(font))
         elif event.cell_key.column_key.value in TABLE_DIRECTORY.get_all_table_ids():
             self.app.push_screen(TableInfoScreen(event.cell_key.column_key.value))
+        elif event.cell_key.column_key.value == "table_count":
+            self.app.push_screen(PopupInfoScreen("Table Count"))
+        elif event.cell_key.column_key.value == "glyph_count":
+            self.app.push_screen(PopupInfoScreen("Glyph Count"))
 
     def on_data_table_header_selected(self, event: DataTable.HeaderSelected) -> None:
         if self.last_clicked_header == event.column_key:
@@ -235,7 +262,7 @@ class TableScreen(Screen):
             self.reverse = False
         self.last_clicked_header = event.column_key
 
-        event.data_table.sort(event.column_key, key = lambda x: str(x).casefold(), reverse = self.reverse)
+        event.data_table.sort(event.column_key, key = lambda x: int_or_str(str(x).casefold()), reverse = self.reverse)
 
     def action_summary_screen(self):
         self.app.push_screen(SummaryScreen())
