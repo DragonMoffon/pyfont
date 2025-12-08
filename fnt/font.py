@@ -33,46 +33,9 @@ from .types import (
 
 __all__ = ("Font", "ParseMethod", "TableRef")
 
-
 # Abstract
-class Font:
-
-    def validate_font(self) -> bool:
-        raise NotImplementedError()
-
-    def get_record(self, name: str) -> TableRecord:
-        raise NotImplementedError()
-
-    def compute_checksum(self, start: int, length: int) -> uint32:
-        raise NotImplementedError()
-
-    def compute_table_checksum(self, name: str) -> uint32:
-        raise NotImplementedError()
-
-    def validate_checksum(self, name: str) -> bool:
-        if not self.has_table(name):
-            raise MissingTableError(name)
-        record = self.get_record(name)
-        checksum = self.compute_table_checksum(name)
-        
-        return checksum == record.checksum
-
-    def get_table_names(self) -> tuple[str, ...]:
-        raise NotImplementedError()
-
-    def get_tables(self) -> tuple[Table, ...]:
-        raise NotImplementedError()
-
-    def get_table(self, name: str) -> Table | None:
-        raise NotImplementedError()
-
-    def has_table(self, name: str) -> bool:
-        raise NotImplementedError()
-
-    def is_table_parsed(self, name: str) -> bool:
-        raise NotImplementedError()
-
-    def seek(self, offset: int):
+class Reader:
+    def seek(self, offset: int) -> None:
         raise NotImplementedError()
 
     def read(self, sz: int) -> bytes:
@@ -80,8 +43,6 @@ class Font:
 
     def pointer(self) -> int:
         raise NotImplementedError()
-
-    # -- FILE READ METHODS --
 
     def get_uint8(self) -> uint8:
         return uint8_from_bytes(self.read(1))
@@ -192,6 +153,73 @@ class Font:
     get_FWORD_array = get_int16_array
 
 
+# Abstract
+class Font(Reader):
+    def validate_font(self) -> bool:
+        raise NotImplementedError()
+
+    def get_record(self, name: str) -> TableRecord:
+        raise NotImplementedError()
+    
+    def compute_checksum(self, start: int, length: int) -> uint32:
+        """
+        Calculate the checksum for a range of bytes based on the OTF spec.
+        This is a 32-bit unsigned integer so it has to be moduloed.
+
+        To find the checksum interpret all of the bytes of the table as
+        an array of 32-bit unsigned integers and sum them.
+
+        The length of a table given by its record does not include any
+        padding but the checksum (and the OTF spec) requires tables to
+        be aligned to 4 bytes. The padding is assumed to be all zeros,
+        but this is not checked.
+
+        The head table requires special conciderations not taken in this function.
+        """
+
+        self.seek(start)
+        # uses smart bit manipulation to ensure required padding is added.
+        count = ((length + 3) & ~3) // 4
+        return sum(self.get_uint32_array(count)) % 0x100000000
+
+    def compute_table_checksum(self, name: str) -> uint32:
+        if not self.has_table(name):
+            raise MissingTableError(name)
+
+        rec = self.get_record(name)
+        if name != "head":
+            return self.compute_checksum(rec.offset, rec.length)
+
+        checksumAdjustmentOffset = rec.offset + 12
+        before_adjustment = self.compute_checksum(rec.offset, 8)
+        after_adjustment = self.compute_checksum(checksumAdjustmentOffset, rec.length - 12)
+
+        return (before_adjustment + after_adjustment) % 0x100000000
+
+    def validate_checksum(self, name: str) -> bool:
+        if not self.has_table(name):
+            raise MissingTableError(name)
+        record = self.get_record(name)
+        checksum = self.compute_table_checksum(name)
+        
+        return checksum == record.checksum
+
+    def get_table_names(self) -> tuple[str, ...]:
+        raise NotImplementedError()
+
+    def get_tables(self) -> tuple[Table, ...]:
+        raise NotImplementedError()
+
+    def get_table(self, name: str) -> Table | None:
+        raise NotImplementedError()
+
+    def has_table(self, name: str) -> bool:
+        raise NotImplementedError()
+
+    def is_table_parsed(self, name: str) -> bool:
+        raise NotImplementedError()
+
+
 type ParseMethod = Callable[[Font, TableRecord], Table]
 
 
@@ -205,7 +233,7 @@ class TableRef[T: Table]:
     def __get__(self, obj: Font | None, objtype: None) -> T | None:
         if obj is None or not obj.has_table(self._name):
             return None
-        return obj.get_table(self._name)
+        return obj.get_table(self._name) # type: ignore
 
     def __set__(self, obj: Font | None, value: None):
         raise TypeError("cannot set the value of a font table.")

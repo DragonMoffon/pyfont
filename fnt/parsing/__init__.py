@@ -1,7 +1,11 @@
 from math import log2, floor
 
-from fnt.font import Font, ParseMethod
+from fnt.exceptions import ParseError
+from fnt.font import Font, Reader, ParseMethod
 from fnt.tables import (
+    TTCHeader,
+    TTCHeader_v1,
+    TTCHeader_v2,
     TableRecord,
     TableDirectory,
     acnt,
@@ -138,7 +142,35 @@ from fnt.flags import Platform, WindowsEncoding, MacintoshEncoding
 
 # -- TOP LEVEL TABLES --
 
-# TODO: Font Collection Header
+def parse_tcc_header(collection: Reader, offset: int = 0) -> TTCHeader:
+    tcc_tag = collection.get_tag()
+    major = collection.get_uint16()
+    minor = collection.get_uint16()
+    num_fonts = collection.get_uint32()
+    font_offsets = collection.get_uint32_array(num_fonts)
+
+    match (major, minor):
+        case (1, 0):
+            return TTCHeader_v1(
+                tcc_tag,
+                major,
+                minor,
+                num_fonts,
+                font_offsets
+            )
+        case (2, 0):
+            return TTCHeader_v2(
+                tcc_tag,
+                major,
+                minor,
+                num_fonts,
+                font_offsets,
+                collection.get_tag(),
+                collection.get_uint32(),
+                collection.get_offset32()
+            )
+        case v:
+            raise ParseError(f"TCCHeader version {v}")
 
 
 def parse_table_record(font: Font) -> TableRecord:
@@ -1066,4 +1098,9 @@ parsers: dict[str, ParseMethod] = {
     "Zapf": parse_Zapf,
 }
 
-__all__ = ("ParseMethod", "parse_table_directory", "parsers")
+__all__ = (
+    "ParseMethod",
+    "parse_ttc_header",
+    "parse_table_directory",
+    "parsers"
+)
