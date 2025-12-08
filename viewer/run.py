@@ -18,7 +18,7 @@ from viewer.tables import TABLE_DIRECTORY
 
 # TODO: Make this pass-in-able?
 FONT_PATH = "F:/!SORTED/Fonts"
-FONT_EXTENSIONS = ("ttf", "otf", "fnt", "ttc", "otc")
+FONT_EXTENSIONS = ("ttf", "otf")
 
 FONT_PATHS: list[Path] = []
 for e in FONT_EXTENSIONS:
@@ -221,10 +221,12 @@ class TableScreen(Screen):
         self.log(event.cell_key.row_key.value, event.cell_key.column_key.value, event.value)
         if event.cell_key.column_key.value == "file_name":
             explore(Path(FONT_PATH) / str(event.value))
-        if event.cell_key.column_key.value == "font_name":
+        elif event.cell_key.column_key.value == "font_name":
             font_path = event.data_table.get_row_at(event.coordinate.row)[-1]
             font = [font for font in self.app.fonts if font.path.name == font_path][0]
             self.app.push_screen(FontScreen(font))
+        elif event.cell_key.column_key.value in TABLE_DIRECTORY.get_all_table_ids():
+            self.app.push_screen(TableInfoScreen(event.cell_key.column_key.value))
 
     def on_data_table_header_selected(self, event: DataTable.HeaderSelected) -> None:
         if self.last_clicked_header == event.column_key:
