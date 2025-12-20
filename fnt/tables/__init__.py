@@ -14,9 +14,10 @@ from fnt.types import (
     LONGDATETIME,
     tag,
     version16dot16,
-    int8x16,
     int8x6,
-    int8x8
+    int8x8,
+    int8x10,
+    int8x16,
 )
 
 # fmt: off
@@ -361,7 +362,7 @@ class VariationAxisRecord:
 
 @table
 class InstanceRecord:
-    subfamilyNameID: uint16 
+    subfamilyNameID: uint16
     flags: uint16 # set to 0
     coordinates: tuple[fixed, ...]
     postScriptNameID: uint16 = None # optional (based on instanceSize) # type: ignore
@@ -390,9 +391,86 @@ class gasp:
 
 
 @table
+class GDEFHeader_v10:
+    majorVersion: uint16
+    minorVersion: uint16
+    glyphClassDefOffset: offset16
+    attachListOffset: offset16
+    ligCaretListOffset: offset16
+    markAttachCaretDefOffset: offset16
+
+
+@table
+class GDEFHeader_v12:
+    majorVersion: uint16
+    minorVersion: uint16
+    glyphClassDefOffset: offset16
+    attachListOffset: offset16
+    ligCaretListOffset: offset16
+    markAttachCaretDefOffset: offset16
+    markGlyphSetsDefOffset: offset16
+
+@table
+class GDEFHeader_v13:
+    majorVersion: uint16
+    minorVersion: uint16
+    glyphClassDefOffset: offset16
+    attachListOffset: offset16
+    ligCaretListOffset: offset16
+    markAttachCaretDefOffset: offset16
+    markGlyphSetsDefOffset: offset16
+    itemVarStoreOffset: offset32
+
+GDEFHeader = GDEFHeader_v10 | GDEFHeader_v12 | GDEFHeader_v13
+
+
+@table
+class ClassDef_fmt1:
+    format: uint16
+    startGlyphID: uint16
+    glyphCount: uint16
+    classValues: tuple[uint16, ...]
+
+@table
+class ClassRange:
+    startGlyphID: uint16
+    endGlyphID: uint16
+    # ! class is a reserved keyword in python so Label was added and is not too spec.
+    classLabel: uint16
+
+@table
+class ClassDef_fmt2:
+    format: uint16
+    classRangeCount: uint16
+    classRangeRecords: tuple[ClassRange, ...]
+
+ClassDef = ClassDef_fmt1 | ClassDef_fmt2
+
+class GlyphClassDefEnum:
+    BASE = 1
+    LIGATURE = 2
+    MARK = 3
+    COMPONENT = 4
+
+@table
+class AttachPoint:
+    pointCount: uint16
+    pointIndices: tuple[uint16, ...]
+
+@table
+class AttachmentPointList:
+    pass
+
+@table
 class GDEF: # TODO: GDEF
     """Glyph Definitions"""
-    ...
+    header: GDEFHeader
+    glyphClassDef: ClassDef | None
+    attachList: None
+    ligCaretList: None
+    markAttachClassDef: ClassDef | None
+    markGlyphSetsDef: None
+    itemVarStore: None
 
 
 @table
@@ -720,7 +798,7 @@ class OS2_v0:
     yStrikeoutSize: FWORD
     yStrickoutPosition: FWORD
     sFamilyClass: int16
-    panose: tuple[int8, int8, int8, int8, int8, int8, int8, int8, int8, int8]
+    panose: int8x10
     ulUnicodeRange1: uint32
     ulUnicodeRange2: uint32
     ulUnicodeRange3: uint32
