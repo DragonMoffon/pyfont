@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .font import Font, TableRef
+from .font import Font, TableRef, RequiredTableRef
 from .types import uint32
 from .exceptions import MissingTableError, ParseError
 from .tables import (
@@ -122,7 +122,7 @@ class FileFont(Font):
 
         record = self._records[name]
         table = parsers[name](self, record)
-        if table is None: # type: ignore -- undefined parsers return None
+        if table is None:  # type: ignore -- undefined parsers return None
             raise ParseError(name)
         self._tables[record.tableTag] = table
 
@@ -167,7 +167,7 @@ class FileFont(Font):
     CBLC: CBLCTable | None = TableRef(CBLCTable)
     CFF: CFFTable | None = TableRef(CFFTable, "CFF ")
     CFF2: CFF2Table | None = TableRef(CFF2Table)
-    cmap: cmapTable | None = TableRef(cmapTable)
+    cmap: cmapTable = RequiredTableRef(cmapTable)
     COLR: COLRTable | None = TableRef(COLRTable)
     CPAL: CPALTable | None = TableRef(CPALTable)
     cvar: cvarTable | None = TableRef(cvarTable)
@@ -189,9 +189,9 @@ class FileFont(Font):
     GSUB: GSUBTable | None = TableRef(GSUBTable)
     gvar: gvarTable | None = TableRef(gvarTable)
     hdmx: hdmxTable | None = TableRef(hdmxTable)
-    head: headTable | None = TableRef(headTable)
-    hhea: hheaTable | None = TableRef(hheaTable)
-    hmtx: hmtxTable | None = TableRef(hmtxTable)
+    head: headTable = RequiredTableRef(headTable)
+    hhea: hheaTable = RequiredTableRef(hheaTable)
+    hmtx: hmtxTable = RequiredTableRef(hmtxTable)
     HVAR: HVARTable | None = TableRef(HVARTable)
     JSTF: JSTFTable | None = TableRef(JSTFTable)
     just: justTable | None = TableRef(justTable)
@@ -202,17 +202,17 @@ class FileFont(Font):
     ltag: ltagTable | None = TableRef(ltagTable)
     LTSH: LTSHTable | None = TableRef(LTSHTable)
     MATH: MATHTable | None = TableRef(MATHTable)
-    maxp: maxpTable | None = TableRef(maxpTable)
+    maxp: maxpTable = RequiredTableRef(maxpTable)
     MERG: MERGTable | None = TableRef(MERGTable)
     meta: metaTable | None = TableRef(metaTable)
     mort: mortTable | None = TableRef(mortTable)
     morx: morxTable | None = TableRef(morxTable)
     MVAR: MVARTable | None = TableRef(MVARTable)
-    name: nameTable | None = TableRef(nameTable)
+    name: nameTable = RequiredTableRef(nameTable)
     opbd: opbdTable | None = TableRef(opbdTable)
     OS2: OS2Table | None = TableRef(OS2Table, "OS/2")
     PCLT: PCLTTable | None = TableRef(PCLTTable)
-    post: postTable | None = TableRef(postTable)
+    post: postTable = RequiredTableRef(postTable)
     prep: prepTable | None = TableRef(prepTable)
     prop: propTable | None = TableRef(propTable)
     sbix: sbixTable | None = TableRef(sbixTable)

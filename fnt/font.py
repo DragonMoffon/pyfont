@@ -33,6 +33,7 @@ from .types import (
 
 __all__ = ("Font", "ParseMethod", "TableRef")
 
+
 # Abstract
 class Reader:
     def seek(self, offset: int) -> None:
@@ -131,9 +132,7 @@ class Reader:
 
     def get_time_array(self, count: int) -> tuple[LONGDATETIME, ...]:
         b = self.read(8 * count)
-        return tuple(
-            LONGDATETIME_from_bytes(b[8 * i : 8 * i + 8]) for i in range(count)
-        )
+        return tuple(LONGDATETIME_from_bytes(b[8 * i : 8 * i + 8]) for i in range(count))
 
     def get_tag_array(self, count: int) -> tuple[tag, ...]:
         b = self.read(4 * count)
@@ -141,9 +140,7 @@ class Reader:
 
     def get_version_legacy_array(self, count: int) -> tuple[version16dot16, ...]:
         b = self.read(4 * count)
-        return tuple(
-            version16dot16_from_bytes(b[4 * i : 4 * i + 4]) for i in range(count)
-        )
+        return tuple(version16dot16_from_bytes(b[4 * i : 4 * i + 4]) for i in range(count))
 
     get_offset8_array = get_uint8_array
     get_offset16_array = get_uint16_array
@@ -160,7 +157,7 @@ class Font(Reader):
 
     def get_record(self, name: str) -> TableRecord:
         raise NotImplementedError()
-    
+
     def compute_checksum(self, start: int, length: int) -> uint32:
         """
         Calculate the checksum for a range of bytes based on the OTF spec.
@@ -201,7 +198,7 @@ class Font(Reader):
             raise MissingTableError(name)
         record = self.get_record(name)
         checksum = self.compute_table_checksum(name)
-        
+
         return checksum == record.checksum
 
     def get_table_names(self) -> tuple[str, ...]:
@@ -233,7 +230,19 @@ class TableRef[T: Table]:
     def __get__(self, obj: Font | None, objtype: None) -> T | None:
         if obj is None or not obj.has_table(self._name):
             return None
-        return obj.get_table(self._name) # type: ignore
+        return obj.get_table(self._name)  # type: ignore
 
     def __set__(self, obj: Font | None, value: None):
         raise TypeError("cannot set the value of a font table.")
+
+
+class RequiredTableRef[T: Table]:
+    # Generic override of table name for names like OS/2
+    def __init__(self, typ: type[T], name: str = "") -> None:
+        self._typ: type[T] = typ
+        self._name: str = name or typ.__name__
+
+    def __get__(self, obj: Font | None, objtype: None) -> T:
+        if obj is None:
+            return None  # type: ignore
+        return obj.get_table(self._name)  # type: ignore
