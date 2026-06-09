@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from .font import Font, TableRef, RequiredTableRef
-from .types import uint32
 from .exceptions import MissingTableError, ParseError
 from .tables import (
     Table,
@@ -153,8 +152,20 @@ class FileFont(Font):
 
         return cls(data, file)
 
+    def __str__(self) -> str:
+        font_name = self.name.nameRecords[4].string
+        records = self.directory.tableRecords
+        ordered = sorted(records, key=lambda r: r.offset)
+        tables_strings = (
+            f"{record.tableTag:<4} @ {record.offset:>10}, size: {record.length:>10} bytes, checksum: {record.checksum:#010x}"
+            for record in ordered
+        )
+        string = f"{font_name:-^65}\nTables:\n  {"\n  ".join(tables_strings)}\n{font_name:-^65}"
+
+        return string
+
     # -- TableRefs for better type checking --
-    directory: TableDirectory | None = TableRef(TableDirectory, "directory")
+    directory: TableDirectory = RequiredTableRef(TableDirectory, "directory")
     acnt: acntTable | None = TableRef(acntTable)
     ankr: ankrTable | None = TableRef(ankrTable)
     avar: avarTable | None = TableRef(avarTable)
