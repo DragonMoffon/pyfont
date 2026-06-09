@@ -507,8 +507,8 @@ class GDEF:  # TODO: GDEF
 class SimpleGlyph:
     numberOfContours: int16
     xMin: int16
-    xMax: int16
     yMin: int16
+    xMax: int16
     yMax: int16
     endPtsOfContours: tuple[uint16, ...]
     instructionLength: uint16
@@ -545,8 +545,8 @@ class CompositeGlyphDescription:
 class CompositeGlyph:
     numberOfContours: int16
     xMin: int16
-    xMax: int16
     yMin: int16
+    xMax: int16
     yMax: int16
     children: tuple[CompositeGlyphDescription, ...]
     instructionLength: uint16
