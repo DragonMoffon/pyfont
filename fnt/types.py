@@ -1,4 +1,3 @@
-from typing import TypeVar, Generic
 from dataclasses import dataclass
 
 __all__ = (
@@ -26,6 +25,7 @@ __all__ = (
     "int32",
     "int32_from_bytes",
     "int32_to_bytes",
+    "uint",
     "fixed",
     "fixed_from_bytes",
     "fixed_to_bytes",
@@ -56,6 +56,7 @@ __all__ = (
     "offset32",
     "offset32_from_bytes",
     "offset32_to_bytes",
+    "offset",
     "version16dot16",
     "version16dot16_from_bytes",
     "version16dot16_to_bytes",
@@ -71,6 +72,7 @@ type uint24 = int
 type int24 = int
 type uint32 = int
 type int32 = int
+type uint = uint8 | uint16 | uint24 | uint32
 type fixed = float
 type UFWORD = int
 type FWORD = int
@@ -81,6 +83,7 @@ type offset8 = int
 type offset16 = int
 type offset24 = int
 type offset32 = int
+type offset = offset8 | offset16 | offset24 | offset32
 type version16dot16 = tuple[int, int]
 
 
