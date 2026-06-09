@@ -108,7 +108,7 @@ or [open a pull request][]..
 - [ ] kern (kerning)
 - [ ] kerx (extended kerning)
 - [ ] lcar (ligature caret)
-- [ ] loca (glyph location)
+- [x] loca (glyph location)
 - [ ] ltag (language tag)
 - [x] maxp (maximum profile)
 - [ ] meta (metadata)
@@ -171,7 +171,7 @@ or [open a pull request][]..
 - [ ] COLR
 - [ ] CPAL
 - [ ] cvar
-- [x] cvt 
+- [x] cvt
 - [x] DSIG
 - [ ] EBDT
 - [ ] EBLC
@@ -244,7 +244,7 @@ or [open a pull request][]..
 - [ ] COLR
 - [ ] CPAL
 - [ ] cvar
-- [x] cvt 
+- [x] cvt
 - [x] DSIG
 - [ ] EBDT
 - [ ] EBLC
@@ -271,7 +271,7 @@ or [open a pull request][]..
 - [ ] kern
 - [ ] kerx
 - [ ] lcar
-- [ ] loca
+- [x] loca
 - [ ] ltag
 - [ ] LTSH
 - [ ] MATH

@@ -63,6 +63,12 @@ from .cmap import (
     NonDefaultUVS,
     cmapSubtable_v14,
 )
+
+from .cff import (
+    CFF,
+    CFF2,
+    VORG
+)
 # fmt: on
 
 # -- TOP LEVEL TABLES --
@@ -144,6 +150,7 @@ class acnt_secondary_data:
 @table
 class acnt:  # TODO: acnt - Unsure if these are correct table types
     """Accent Attachments"""
+
     version: F2DOT14
     firstAccentedGlyphIndex: uint16
     lastAccentedGlyphIndex: uint16
@@ -164,6 +171,7 @@ class ankr_glyph:
 @table
 class ankr:
     """Anchor Points"""
+
     version: uint16
     flags: uint16
     lookupTableOffset: uint32
@@ -187,6 +195,7 @@ class SegmentMaps:
 @table
 class avar:
     """Axis Variations"""
+
     majorVersion: uint16
     minorVersion: uint16
     reserved: uint16
@@ -195,72 +204,70 @@ class avar:
 
 
 @table
-class bdat: # TODO: bdat
+class bdat:  # TODO: bdat
     """Bitmap Data"""
+
     ...
 
 
 @table
-class bhed: # TODO: bhed
+class bhed:  # TODO: bhed
     """Bitmap Header"""
+
     ...
 
 
 @table
-class bloc: # TODO: bloc
+class bloc:  # TODO: bloc
     """Bitmap Location"""
+
     ...
 
 
 @table
-class bsln: # TODO: bsln
+class bsln:  # TODO: bsln
     """Baseline (Apple)"""
+
     ...
 
 
 @table
-class CBDT: # TODO: CBDT
+class CBDT:  # TODO: CBDT
     """Color Bitmap Data"""
 
 
 @table
-class CBLC: # TODO: CBLC
+class CBLC:  # TODO: CBLC
     """Color Bitmap Location"""
+
     ...
 
 
 @table
-class CFF: # TODO: CFF
-    """Compat Font Format repesentation v1"""
-    ...
-
-
-@table
-class CFF2: # TODO: CFF2
-    """Compat Font Format repesentation v2"""
-    ...
-
-@table
-class COLR: # TODO: COLR
+class COLR:  # TODO: COLR
     """Color Glyph Representation"""
+
     ...
 
 
 @table
-class CPAL: # TODO: CPAL
-    """Color Lookup Table""" #?: I think?
+class CPAL:  # TODO: CPAL
+    """Color Lookup Table"""  # ?: I think?
+
     ...
 
 
 @table
-class cvar: # TODO: cvar
+class cvar:  # TODO: cvar
     """CVT Variations"""
+
     ...
 
 
 @table
 class cvt:
     """Font Instructions"""
+
     program: tuple[FWORD]
 
 
@@ -285,6 +292,7 @@ class SignatureRecord:
 @table
 class DSIG:
     """Digital Signatures"""
+
     version: uint32
     numSignatures: uint16
     flags: uint16
@@ -293,63 +301,72 @@ class DSIG:
 
 
 @table
-class EBDT: # TODO: EBDT
+class EBDT:  # TODO: EBDT
     """Embedded Bitmap Data"""
+
     ...
 
 
 @table
-class EBLC: # TODO: EBLC
+class EBLC:  # TODO: EBLC
     """Embedded Bitmap Locations"""
+
     ...
 
 
 @table
-class EBSC: # TODO: EBSC
+class EBSC:  # TODO: EBSC
     """Embedded Bitmap Scaling Data"""
+
     ...
 
 
 @table
-class fdsc: # TODO: fdsc
+class fdsc:  # TODO: fdsc
     """Font Family Substitution Descriptors"""
+
     ...
 
 
 @table
-class feat: # TODO: feat
+class feat:  # TODO: feat
     """Font Features"""
+
     ...
 
 
 @table
-class fmtx: # TODO: fmtx
+class fmtx:  # TODO: fmtx
     """Font Metrics"""
+
     ...
 
 
 @table
-class fond: # TODO: fond
+class fond:  # TODO: fond
     """Font Family Compatiblity"""
+
     ...
 
 
 @table
 class fpgm:
     """Font Program"""
+
     program: tuple[uint8, ...]
 
 
 @table
 class fvarHeader:
-    majorVersion: uint16 # 1
-    minorVersion: uint16 # 0
+    majorVersion: uint16  # 1
+    minorVersion: uint16  # 0
     axesArrayOffset: offset16
-    reserved: uint16 # set to 2
+    reserved: uint16  # set to 2
     axisCount: uint16
-    axisSize: uint16 # set to 0x0014 (20)
+    axisSize: uint16  # set to 0x0014 (20)
     instanceCount: uint16
-    instanceSize: uint16 # either axisCount * sizeof(fixed) + 6 or axisCount * sizeof(fixed) + 4
+    instanceSize: uint16  # either axisCount * sizeof(fixed) + 6 or axisCount * sizeof(fixed) + 4
+
 
 @table
 class VariationAxisRecord:
@@ -357,20 +374,22 @@ class VariationAxisRecord:
     minValue: fixed
     defaultValue: fixed
     maxValue: fixed
-    flags: uint16 # 0x0001 for hidden 0x0002 -> 0xFFFE are reserved
+    flags: uint16  # 0x0001 for hidden 0x0002 -> 0xFFFE are reserved
     axisNameID: uint16
+
 
 @table
 class InstanceRecord:
     subfamilyNameID: uint16
-    flags: uint16 # set to 0
+    flags: uint16  # set to 0
     coordinates: tuple[fixed, ...]
-    postScriptNameID: uint16 = None # optional (based on instanceSize) # type: ignore
+    postScriptNameID: uint16 = None  # optional (based on instanceSize) # type: ignore
 
 
 @table
 class fvar:
     """Font Variations"""
+
     header: fvarHeader
     axes: tuple[VariationAxisRecord, ...]
     instances: tuple[InstanceRecord, ...]
@@ -385,6 +404,7 @@ class gaspRange:
 @table
 class gasp:
     """Grayscale Rasterization Techniques"""
+
     version: uint16
     numRanges: uint16
     gaspRanges: tuple[gaspRange, ...]
@@ -410,6 +430,7 @@ class GDEFHeader_v12:
     markAttachCaretDefOffset: offset16
     markGlyphSetsDefOffset: offset16
 
+
 @table
 class GDEFHeader_v13:
     majorVersion: uint16
@@ -421,6 +442,7 @@ class GDEFHeader_v13:
     markGlyphSetsDefOffset: offset16
     itemVarStoreOffset: offset32
 
+
 GDEFHeader = GDEFHeader_v10 | GDEFHeader_v12 | GDEFHeader_v13
 
 
@@ -431,6 +453,7 @@ class ClassDef_fmt1:
     glyphCount: uint16
     classValues: tuple[uint16, ...]
 
+
 @table
 class ClassRange:
     startGlyphID: uint16
@@ -438,13 +461,16 @@ class ClassRange:
     # ! class is a reserved keyword in python so Label was added and is not too spec.
     classLabel: uint16
 
+
 @table
 class ClassDef_fmt2:
     format: uint16
     classRangeCount: uint16
     classRangeRecords: tuple[ClassRange, ...]
 
+
 ClassDef = ClassDef_fmt1 | ClassDef_fmt2
+
 
 class GlyphClassDefEnum:
     BASE = 1
@@ -452,18 +478,22 @@ class GlyphClassDefEnum:
     MARK = 3
     COMPONENT = 4
 
+
 @table
 class AttachPoint:
     pointCount: uint16
     pointIndices: tuple[uint16, ...]
 
+
 @table
 class AttachmentPointList:
     pass
 
+
 @table
-class GDEF: # TODO: GDEF
+class GDEF:  # TODO: GDEF
     """Glyph Definitions"""
+
     header: GDEFHeader
     glyphClassDef: ClassDef | None
     attachList: None
@@ -529,35 +559,40 @@ type glyfGlyph = SimpleGlyph | CompositeGlyph
 @table
 class glyf:
     """Glyphs"""
+
     glyphs: tuple[glyfGlyph, ...]
 
 
 @table
-class GPOS: # TODO: GPOS
+class GPOS:  # TODO: GPOS
     """Glyph Positioning"""
+
     ...
 
 
 @table
-class GSUB: # TODO: GSUB
+class GSUB:  # TODO: GSUB
     """Glyph Substitutions"""
 
 
 @table
-class gvar: # TODO: gvar
+class gvar:  # TODO: gvar
     """Glyph Variations"""
+
     ...
 
 
 @table
-class hdmx: # TODO: hdmx
+class hdmx:  # TODO: hdmx
     """Horizontal Device Metrics (Apple)"""
+
     ...
 
 
 @table
 class head:
     """Header"""
+
     majorVersion: uint16
     minorVersion: uint16
     fontRevision: fixed
@@ -581,6 +616,7 @@ class head:
 @table
 class hhea:
     """Horizontal Header"""
+
     majorVersion: uint16
     minorVersion: uint16
     ascender: FWORD
@@ -607,73 +643,85 @@ class LongHorMetric:
 @table
 class hmtx:
     """Horizontal Metrics"""
+
     hMetrics: tuple[LongHorMetric, ...]
     leftSideBearings: tuple[FWORD, ...]
 
 
 @table
-class HVAR: # TODO: HVAR
+class HVAR:  # TODO: HVAR
     """Horizontal Glyph Metrics (Variable Fonts)"""
+
     ...
 
 
 @table
-class JSTF: # TODO: JSTF
+class JSTF:  # TODO: JSTF
     """Justification"""
+
     ...
 
 
 @table
-class just: # TODO: just
-    """Justifitcation"""  #?: deja vu
+class just:  # TODO: just
+    """Justifitcation"""  # ?: deja vu
+
     ...
 
 
 @table
-class kern: # TODO: kern
+class kern:  # TODO: kern
     """Kerning"""
+
     ...
 
 
 @table
-class kerx: # TODO: kerx
+class kerx:  # TODO: kerx
     """Kerning (Apple)"""
+
     ...
 
 
 @table
-class lcar: # TODO: lcar
+class lcar:  # TODO: lcar
     """Ligature Caret (Apple)"""
+
     ...
 
 
 @table
 class loca:
     """Index-to-location"""
+
     offsets: tuple[offset16 | offset32, ...]
 
 
 @table
-class ltag: # TODO: ltag
+class ltag:  # TODO: ltag
     """Language Tag (Apple)"""
+
     ...
 
 
 @table
-class LTSH: # TODO: LTSH
+class LTSH:  # TODO: LTSH
     """Linear Threshold"""
+
     ...
 
 
 @table
-class MATH: # TODO: MATH
+class MATH:  # TODO: MATH
     """Mathematical Typesetting"""
+
     ...
 
 
 @table
 class maxp_v05:
     """Memory Requirements"""
+
     version: version16dot16
     numGlyphs: uint16
 
@@ -681,6 +729,7 @@ class maxp_v05:
 @table
 class maxp_v10:
     """Memory Requirements"""
+
     version: version16dot16
     numGlyphs: uint16
     maxPoints: uint16
@@ -702,33 +751,37 @@ type maxp = maxp_v05 | maxp_v10
 
 
 @table
-class MERG: # TODO: MERG
+class MERG:  # TODO: MERG
     """Merge"""  # ?: what
+
     ...
 
 
 @table
-class meta: # TODO: meta
+class meta:  # TODO: meta
     """Metadata"""
+
     ...
 
 
 @table
-class mort: # TODO: mort
+class mort:  # TODO: mort
     """Glyph Metamorphosis"""  # ?: what??
+
     ...
 
 
 @table
-class morx: # TODO: morx
-    """Glyph Metamorphosis (Apple)""" # ?: what (apple)??
+class morx:  # TODO: morx
+    """Glyph Metamorphosis (Apple)"""  # ?: what (apple)??
+
     ...
 
 
-
 @table
-class MVAR: # TODO: MVAR
+class MVAR:  # TODO: MVAR
     """Metrics Variations"""
+
     ...
 
 
@@ -746,6 +799,7 @@ class NameRecord:
 @table
 class name_v0:
     """Human-readable Names"""
+
     version: uint16
     count: uint16
     storageOffset: offset16
@@ -762,6 +816,7 @@ class LangTagRecord:
 @table
 class name_v1:
     """Human-readable Names"""
+
     version: uint16
     count: uint16
     storageOffset: offset16
@@ -774,14 +829,16 @@ type name = name_v0 | name_v1
 
 
 @table
-class opbd: # TODO: opbd
+class opbd:  # TODO: opbd
     """Optical Bounds"""
+
     ...
 
 
 @table
 class OS2_v0:
     """Windows-required Metrics"""
+
     version: uint16
     xAvgCharWidth: FWORD
     usWeightClass: uint16
@@ -817,6 +874,7 @@ class OS2_v0:
 @table
 class OS2_v1(OS2_v0):
     """Windows-required Metrics"""
+
     ulCodePageRange1: uint32
     ulCodePageRange2: uint32
 
@@ -824,6 +882,7 @@ class OS2_v1(OS2_v0):
 @table
 class OS2_v2(OS2_v1):
     """Windows-required Metrics"""
+
     sxHeight: FWORD
     sCapHeight: FWORD
     usDefaultChar: uint16
@@ -838,6 +897,7 @@ OS2_v4 = OS2_v2
 @table
 class OS2_v5(OS2_v2):
     """Windows-required Metrics"""
+
     usLowerOpticalPointSize: uint16
     usUpperOpticalPointSize: uint16
 
@@ -846,8 +906,9 @@ type OS2 = OS2_v0 | OS2_v1 | OS2_v2 | OS2_v3 | OS2_v4 | OS2_v4
 
 
 @table
-class PCLT: # TODO: PCLT unique types and functions for fetching them.
+class PCLT:  # TODO: PCLT unique types and functions for fetching them.
     """HP Printer Command Language"""
+
     majorVersion: uint16
     minorVersion: uint16
     fontNumber: uint32
@@ -857,7 +918,7 @@ class PCLT: # TODO: PCLT unique types and functions for fetching them.
     typeFamily: uint16
     capHeight: uint16
     symbolSet: uint16
-    typeface: int8x16 # Always 16 items
+    typeface: int8x16  # Always 16 items
     characterComplement: int8x8
     fileName: int8x6
     strokeWeight: int8
@@ -869,6 +930,7 @@ class PCLT: # TODO: PCLT unique types and functions for fetching them.
 @table
 class post_v1:
     """PostScript"""
+
     version: version16dot16
     italicAngle: fixed
     underlinePosition: FWORD
@@ -883,6 +945,7 @@ class post_v1:
 @table
 class post_v2(post_v1):
     """PostScript"""
+
     numGlyphs: uint16
     glyphNameIndex: tuple[uint16, ...]
     stringData: tuple[str, ...]
@@ -891,6 +954,7 @@ class post_v2(post_v1):
 @table
 class post_v25(post_v1):
     """PostScript"""
+
     numGlyphs: uint16
     offset: tuple[int8, ...]
 
@@ -904,18 +968,21 @@ type post = post_v1 | post_v2 | post_v25 | post_v3 | post_v4
 @table
 class prep:
     """CVP Instructions"""
+
     program: tuple[uint8, ...]
 
 
 @table
-class prop: # TODO: prop
+class prop:  # TODO: prop
     """Glyph Properties"""
+
     ...
 
 
 @table
-class STAT: # TODO: STAT
+class STAT:  # TODO: STAT
     """Style Attributes"""
+
     ...
 
 
@@ -936,6 +1003,7 @@ class SVGDocumentList:
 @table
 class SVG:
     """Scalable Vector Graphics"""
+
     version: uint16
     svgDocumentListOffset: offset32
     reserved: uint32
@@ -968,43 +1036,42 @@ class sbixGlyph:
 @table
 class sbix:
     """Standard Bitmap Graphics"""
+
     header: sbixHeader
     strikes: tuple[Strike, ...]
     glyphs: tuple[sbixGlyph, ...]
 
 
 @table
-class trak: # TODO: trak
+class trak:  # TODO: trak
     """Tracking"""
+
     ...
 
 
 @table
-class VDMX: # TODO: VDMX
+class VDMX:  # TODO: VDMX
     """Vertical Device Metrics"""
+
     ...
 
 
 @table
-class vhea: # TODO: vhea
+class vhea:  # TODO: vhea
     """Vertical Header"""
+
     ...
 
 
 @table
-class vmtx: # TODO: vmtx
+class vmtx:  # TODO: vmtx
     """Vertical Metrics"""
+
     ...
 
 
 @table
-class VORG: # TODO: VORG
-    """Vertical Origin"""
-    ...
-
-
-@table
-class VVAR: # TODO: VVAR
+class VVAR:  # TODO: VVAR
     """Vertical Metrics Variations"""
 
 
@@ -1016,15 +1083,17 @@ class xref:
     Apple only
     Removed on font publications typically
     """
+
     ...  # TODO: xref
 
 
 @table
-class Zapf: # TODO: Zapf
+class Zapf:  # TODO: Zapf
     """
     Information about every glyph in the table
     Named after designer Hermann Zapf
     """
+
     ...
 
 

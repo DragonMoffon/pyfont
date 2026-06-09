@@ -138,6 +138,7 @@ from fnt.tables import (
     Zapf,
 )
 from fnt.flags import Platform, WindowsEncoding, MacintoshEncoding
+from fnt.tables.cff import CFFHeader, CFFIndex, CFFStringIndex
 
 
 # -- TOP LEVEL TABLES --
@@ -262,7 +263,42 @@ def parse_bloc(font: Font, record: TableRecord) -> bloc: ...  # TODO: bloc
 def parse_bsln(font: Font, record: TableRecord) -> bsln: ...  # TODO: bsln
 def parse_CBDT(font: Font, record: TableRecord) -> CBDT: ...  # TODO: CBDT
 def parse_CBLC(font: Font, record: TableRecord) -> CBLC: ...  # TODO: CBLC
-def parse_CFF(font: Font, record: TableRecord) -> CFF: ...  # TODO: CFF
+
+
+def parse_CFFIndex(font: Font) -> CFFIndex:
+    count = font.get_uint16()
+    if count == 0:
+        return CFFIndex(count, 1, (), ())
+    off = font.get_uint8()
+    offsets = tuple(font.get_offset(off) for _ in range(count + 1))
+    values = tuple(font.get_uint8_array(e - s) for s, e in zip(offsets[:-1], offsets[1:]))
+    return CFFIndex(count, off, offsets, values)
+
+
+def parse_CFFStringIndex(font: Font) -> CFFStringIndex:
+    count = font.get_uint16()
+    if count == 0:
+        return CFFStringIndex(count, 1, (), ())
+    off = font.get_uint8()
+    offsets = tuple(font.get_offset(off) for _ in range(count + 1))
+    strings = tuple(font.read(e - s).decode() for s, e in zip(offsets[:-1], offsets[1:]))
+    return CFFStringIndex(count, off, offsets, strings)
+
+
+def parse_CFF(font: Font, record: TableRecord) -> CFF:
+    font.seek(record.offset)
+
+    header = CFFHeader(font.get_uint8(), font.get_uint8(), font.get_uint8(), font.get_uint8())
+
+    return CFF(
+        header,
+        parse_CFFStringIndex(font),
+        parse_CFFIndex(font),
+        parse_CFFStringIndex(font),
+        parse_CFFIndex(font),
+    )
+
+
 def parse_CFF2(font: Font, record: TableRecord) -> CFF2: ...  # TODO: CFF2
 
 
@@ -627,6 +663,8 @@ def parse_loca(font: Font, record: TableRecord) -> loca:
 
     count = record.length // (16 if offset_size else 8)
     reader = font.get_offset32_array if offset_size else font.get_offset16_array
+
+    font.seek(record.offset)
 
     return loca(reader(count))
 
