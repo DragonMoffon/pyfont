@@ -464,7 +464,7 @@ def parse_cmap_subtable(font: Font, record: TableRecord, encoding: EncodingRecor
                     )
                     non_default = NonDefaultUVS(num, mappings)
 
-                    selector_groups = (selector, default, non_default)
+                selector_groups.append((selector, default, non_default))
             return cmapSubtable_v14(fmt, length, count, tuple(selector_groups))
 
 
