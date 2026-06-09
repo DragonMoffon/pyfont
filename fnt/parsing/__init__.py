@@ -142,6 +142,7 @@ from fnt.flags import Platform, WindowsEncoding, MacintoshEncoding
 
 # -- TOP LEVEL TABLES --
 
+
 def parse_tcc_header(collection: Reader, offset: int = 0) -> TTCHeader:
     tcc_tag = collection.get_tag()
     major = collection.get_uint16()
@@ -151,13 +152,7 @@ def parse_tcc_header(collection: Reader, offset: int = 0) -> TTCHeader:
 
     match (major, minor):
         case (1, 0):
-            return TTCHeader_v1(
-                tcc_tag,
-                major,
-                minor,
-                num_fonts,
-                font_offsets
-            )
+            return TTCHeader_v1(tcc_tag, major, minor, num_fonts, font_offsets)
         case (2, 0):
             return TTCHeader_v2(
                 tcc_tag,
@@ -167,16 +162,14 @@ def parse_tcc_header(collection: Reader, offset: int = 0) -> TTCHeader:
                 font_offsets,
                 collection.get_tag(),
                 collection.get_uint32(),
-                collection.get_offset32()
+                collection.get_offset32(),
             )
         case v:
             raise ParseError(f"TCCHeader version {v}")
 
 
 def parse_table_record(font: Font) -> TableRecord:
-    return TableRecord(
-        font.get_tag(), font.get_uint32(), font.get_offset32(), font.get_uint32()
-    )
+    return TableRecord(font.get_tag(), font.get_uint32(), font.get_offset32(), font.get_uint32())
 
 
 def parse_table_directory(font: Font, offset: int = 0) -> TableDirectory:
@@ -192,9 +185,7 @@ def parse_table_directory(font: Font, offset: int = 0) -> TableDirectory:
     font.seek(offset + 12)  # move 12 bytes to get to correct location
     records = tuple(parse_table_record(font) for _ in range(num_tables))
 
-    return TableDirectory(
-        version, num_tables, search_range, entry_selector, range_shift, records
-    )
+    return TableDirectory(version, num_tables, search_range, entry_selector, range_shift, records)
 
 
 # -- FONT TABLES --
@@ -208,9 +199,7 @@ def parse_SegmentMaps(font: Font) -> SegmentMaps:
     count = font.get_uint16()
     return SegmentMaps(
         count,
-        tuple(
-            AxisValueMap(font.get_F2DOT14(), font.get_F2DOT14()) for _ in range(count)
-        ),
+        tuple(AxisValueMap(font.get_F2DOT14(), font.get_F2DOT14()) for _ in range(count)),
     )
 
 
@@ -253,9 +242,7 @@ def parse_BASE(font: Font, record: TableRecord) -> BASE:  # TODO: BASE
     item_var_store = None
     if major == 1 and minor == 1:
         item_var_store = font.get_offset32()
-        header = BaseHeader_fmt11(
-            major, minor, horiz_offset, vert_offset, item_var_store
-        )
+        header = BaseHeader_fmt11(major, minor, horiz_offset, vert_offset, item_var_store)
     else:
         header = BaseHeader_fmt1(major, minor, horiz_offset, vert_offset)
 
@@ -279,9 +266,7 @@ def parse_CFF(font: Font, record: TableRecord) -> CFF: ...  # TODO: CFF
 def parse_CFF2(font: Font, record: TableRecord) -> CFF2: ...  # TODO: CFF2
 
 
-def parse_cmap_subtable(
-    font: Font, record: TableRecord, encoding: EncodingRecord
-) -> cmapSubtable:
+def parse_cmap_subtable(font: Font, record: TableRecord, encoding: EncodingRecord) -> cmapSubtable:
     offset = record.offset + encoding.subtableOffset
     font.seek(offset)
     fmt = font.get_uint16()
@@ -391,7 +376,7 @@ def parse_cmap_subtable(
                 language,
                 count,
                 tuple(
-                    MapGroup(font.get_uint32(), font.get_uint32(), font.get_uint32()) 
+                    MapGroup(font.get_uint32(), font.get_uint32(), font.get_uint32())
                     for _ in range(count)
                 ),
             )
@@ -430,25 +415,21 @@ def parse_cmap_subtable(
                     font.seek(offset + selector.defaultUVSOffset)
                     num = font.get_uint32()
                     ranges = tuple(
-                        UnicodeValueRange(font.get_uint24(), font.get_uint8())
-                        for _ in range(num)
+                        UnicodeValueRange(font.get_uint24(), font.get_uint8()) for _ in range(num)
                     )
                     default = DefaultUVS(num, ranges)
-                
+
                 non_default = None
                 if selector.nonDefaultUVSOffset != 0:
                     font.seek(offset + selector.nonDefaultUVSOffset)
                     num = font.get_uint32()
                     mappings = tuple(
-                        UVSMapping(font.get_uint24(), font.get_uint16())
-                        for _ in range(num)
+                        UVSMapping(font.get_uint24(), font.get_uint16()) for _ in range(num)
                     )
                     non_default = NonDefaultUVS(num, mappings)
 
                     selector_groups = (selector, default, non_default)
-            return cmapSubtable_v14(
-                fmt, length, count, tuple(selector_groups)
-            )
+            return cmapSubtable_v14(fmt, length, count, tuple(selector_groups))
 
 
 def parse_cmap(font: Font, record: TableRecord) -> cmap:
@@ -475,10 +456,7 @@ def parse_cmap(font: Font, record: TableRecord) -> cmap:
         sub_tables.append(sub_table)
         sub_table_offsets[encoding.subtableOffset] = sub_table
 
-    return cmap(
-        header,
-        tuple(sub_tables)
-    )
+    return cmap(header, tuple(sub_tables))
 
 
 def parse_COLR(font: Font, record: TableRecord) -> COLR: ...  # TODO: COLR
@@ -491,9 +469,7 @@ def parse_cvt(font: Font, record: TableRecord) -> cvt:
     return cvt(tuple(font.get_FWORD_array(record.length // 2)))
 
 
-def parse_SignatureBlock(
-    font: Font, offset: int, record: SignatureRecord
-) -> SignatureBlock:
+def parse_SignatureBlock(font: Font, offset: int, record: SignatureRecord) -> SignatureBlock:
     font.seek(offset + record.signatureBlockOffset)
     if record.format == 1:
         r1, r2 = font.get_uint16(), font.get_uint16()
@@ -512,9 +488,7 @@ def parse_DSIG(font: Font, record: TableRecord) -> DSIG:
         SignatureRecord(font.get_uint32(), font.get_uint32(), font.get_offset32())
         for _ in range(count)
     )
-    blocks = tuple(
-        parse_SignatureBlock(font, record.offset, sig_record) for sig_record in records
-    )
+    blocks = tuple(parse_SignatureBlock(font, record.offset, sig_record) for sig_record in records)
     return DSIG(version, count, flags, records, blocks)
 
 
@@ -543,8 +517,8 @@ def parse_fvar(font: Font, record: TableRecord) -> fvar:
         font.get_uint16(),
         font.get_uint16(),
         font.get_uint16(),
-    ) 
-    
+    )
+
     font.seek(record.offset + header.axesArrayOffset)
     axes = tuple(
         VariationAxisRecord(
@@ -553,7 +527,7 @@ def parse_fvar(font: Font, record: TableRecord) -> fvar:
             font.get_fixed(),
             font.get_fixed(),
             font.get_uint16(),
-            font.get_uint16()
+            font.get_uint16(),
         )
         for _ in range(header.axisCount)
     )
@@ -633,8 +607,7 @@ def parse_hmtx(font: Font, record: TableRecord) -> hmtx:
     font.seek(record.offset)
 
     metrics = tuple(
-        LongHorMetric(font.get_UFWORD(), font.get_FWORD())
-        for _ in range(number_of_metrics)
+        LongHorMetric(font.get_UFWORD(), font.get_FWORD()) for _ in range(number_of_metrics)
     )
     side_beaings = font.get_FWORD_array(num_glpyhs - number_of_metrics)
 
@@ -647,7 +620,17 @@ def parse_just(font: Font, record: TableRecord) -> just: ...  # TODO: just
 def parse_kern(font: Font, record: TableRecord) -> kern: ...  # TODO: kern
 def parse_kerx(font: Font, record: TableRecord) -> kerx: ...  # TODO: kerx
 def parse_lcar(font: Font, record: TableRecord) -> lcar: ...  # TODO: lcar
-def parse_loca(font: Font, record: TableRecord) -> loca: ...  # TODO: loca
+
+
+def parse_loca(font: Font, record: TableRecord) -> loca:
+    offset_size = font.get_table("head").indexToLocFormat  # type: ignore
+
+    count = record.length // (16 if offset_size else 8)
+    reader = font.get_offset32_array if offset_size else font.get_offset16_array
+
+    return loca(reader(count))
+
+
 def parse_ltag(font: Font, record: TableRecord) -> ltag: ...  # TODO: ltag
 def parse_LTSH(font: Font, record: TableRecord) -> LTSH: ...  # TODO: LTSH
 def parse_MATH(font: Font, record: TableRecord) -> MATH: ...  # TODO: MATH
@@ -704,8 +687,7 @@ def parse_name(font: Font, record: TableRecord) -> name:
     )
     lang_tag_count = 0 if version == 0 else font.get_uint16()
     lang_tags = tuple(
-        LangTagRecord(font.get_uint16(), font.get_offset16(), "")
-        for _ in range(lang_tag_count)
+        LangTagRecord(font.get_uint16(), font.get_offset16(), "") for _ in range(lang_tag_count)
     )
 
     data_location = record.offset + offset
@@ -1098,9 +1080,4 @@ parsers: dict[str, ParseMethod] = {
     "Zapf": parse_Zapf,
 }
 
-__all__ = (
-    "ParseMethod",
-    "parse_ttc_header",
-    "parse_table_directory",
-    "parsers"
-)
+__all__ = ("ParseMethod", "parse_ttc_header", "parse_table_directory", "parsers")
