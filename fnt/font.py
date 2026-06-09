@@ -69,6 +69,30 @@ class Reader:
     def get_int32(self) -> int32:
         return int32_from_bytes(self.read(4))
 
+    def get_int(self, size: int) -> int:
+        match size:
+            case 1:
+                return self.get_int8()
+            case 2:
+                return self.get_int16()
+            case 3:
+                return self.get_int24()
+            case 4:
+                return self.get_int32()
+        raise ValueError("Fonts only support 32-bit or less ints.")
+
+    def get_uint(self, size: int):
+        match size:
+            case 1:
+                return self.get_uint8()
+            case 2:
+                return self.get_uint16()
+            case 3:
+                return self.get_uint24()
+            case 4:
+                return self.get_uint32()
+        raise ValueError("Fonts only support 32-bit or less uints.")
+
     def get_fixed(self) -> fixed:
         return fixed_from_bytes(self.read(4))
 
@@ -87,6 +111,7 @@ class Reader:
     get_offset8 = get_uint8
     get_offset16 = get_uint16
     get_offset32 = get_uint32
+    get_offset = get_uint
     get_UFWORD = get_uint16
     get_FWORD = get_int16
 
