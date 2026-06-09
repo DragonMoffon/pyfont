@@ -129,7 +129,7 @@ class Reader:
 
     def get_int16_array(self, count: int) -> tuple[int16, ...]:
         b = self.read(2 * count)
-        return tuple(uint16_from_bytes(b[2 * i : 2 * i + 2]) for i in range(count))
+        return tuple(int16_from_bytes(b[2 * i : 2 * i + 2]) for i in range(count))
 
     def get_uint24_array(self, count: int) -> tuple[uint24, ...]:
         b = self.read(3 * count)
