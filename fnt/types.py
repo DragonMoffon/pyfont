@@ -256,6 +256,7 @@ def version16dot16_to_bytes(v: version16dot16) -> bytes:
 
 table = dataclass
 
+# fmt: off
 int8x6 = tuple[int8, int8, int8, int8, int8, int8]
 int8x8 = tuple[int8, int8, int8, int8, int8, int8, int8, int8]
 int8x10 = tuple[int8, int8, int8, int8, int8, int8, int8, int8, int8, int8]
@@ -794,3 +795,4 @@ uint8x8192 = tuple[
     uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8,
     uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8, uint8
 ]
+# fmt: on
