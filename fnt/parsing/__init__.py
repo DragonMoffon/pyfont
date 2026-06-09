@@ -661,7 +661,7 @@ def parse_lcar(font: Font, record: TableRecord) -> lcar: ...  # TODO: lcar
 def parse_loca(font: Font, record: TableRecord) -> loca:
     offset_size = font.get_table("head").indexToLocFormat  # type: ignore
 
-    count = record.length // (16 if offset_size else 8)
+    count = record.length // (8 if offset_size else 4)
     reader = font.get_offset32_array if offset_size else font.get_offset16_array
 
     font.seek(record.offset)
